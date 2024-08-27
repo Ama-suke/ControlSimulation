@@ -8,6 +8,9 @@
 # *
 # ----------------------------------------------------------------------------
 
+import numpy as np
+import json
+
 class PidServo:
     """
     PID controller class
@@ -38,6 +41,14 @@ class PidServo:
             self.Kp = Kp
             self.Ki = Ki
             self.Kd = Kd
+
+        def __str__(self) -> str:
+            return json.dumps({
+                "PidServo": {
+                    "Kp": self.Kp,
+                    "Ki": self.Ki,
+                    "Kd": self.Kd
+                }})
 
     def __init__(self, pidParam: Param) -> None:
         """

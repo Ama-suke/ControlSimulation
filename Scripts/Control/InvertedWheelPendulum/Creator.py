@@ -16,6 +16,7 @@ from Control.InvertedWheelPendulum.Parameter import Parameter, ControllerType
 from Control.InvertedWheelPendulum.Plant.InvertedWheelPendulum import InvertedWheelPendulum
 from Control.InvertedWheelPendulum.Controller.PidController import PidController
 from Control.InvertedWheelPendulum.Controller.OperatorController import OperatorController
+from Control.InvertedWheelPendulum.Controller.MorohoshiController import MorohoshiController
 from Lib.SignalGenerator.ImpulseGenerator import ImpulseGenerator
 from Lib.SignalGenerator.MSequenceGenerator import MSequenceGenerator
 from Lib.SignalGenerator.StepGenerator import StepGenerator
@@ -35,6 +36,8 @@ def CreateController() -> Controller:
         return PidController(p.pidControllerParam)
     elif p.controllerType == ControllerType.OPERATOR:
         return OperatorController(p.operatorParam)
+    elif p.controllerType == ControllerType.MOROHOSHI:
+        return MorohoshiController(p.morohoshiParam)
     else:
         raise ValueError("Invalid controller type")
 

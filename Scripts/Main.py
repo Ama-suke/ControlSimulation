@@ -12,8 +12,10 @@ import numpy as np
 import os
 import sys
 import importlib.util
+import datetime
 
 from Lib.Utils.DataLogger import DataLogger
+from DebugDataLogger import DebugDataLogger
 
 from Lib.SignalGenerator.SignalGenerator import SignalGenerator
 from Lib.SignalGenerator.ImpulseGenerator import ImpulseGenerator
@@ -77,13 +79,19 @@ def main(program: str):
 
         # Update the plant state
         plant.UpdateState(inputs, parameter.dt)
-
     print("Done")
 
     # save the result to a file
-    if not os.path.exists("../Data"):
-        os.makedirs("../Data")
-    dataLogger.SaveLoggedData("../Data/result.csv")
+    print("Save the result...")
+    timeNow = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+    dataPath = f"../Data/{timeNow}"
+    if not os.path.exists(dataPath):
+        os.makedirs(dataPath)
+    dataLogger.SaveLoggedData(f"{dataPath}/result.csv")
+    DebugDataLogger.SaveLoggedData(f"{dataPath}/debug.csv")
+    parameter.SaveToFile(f"{dataPath}/parameter.json")
+
+    print("Finish")
 
 def ImportProgram(program: str):
     module_name = "Creator"

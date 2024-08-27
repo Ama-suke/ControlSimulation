@@ -9,6 +9,7 @@
 # ----------------------------------------------------------------------------
 
 import numpy as np
+import json
 from Lib.SignalGenerator.SignalGenerator import SignalGenerator
 
 class ImpulseGenerator(SignalGenerator):
@@ -37,6 +38,13 @@ class ImpulseGenerator(SignalGenerator):
             """
             self.amplitude = amplitude
             self.startTimeStep = startTimeStep
+
+        def __str__(self) -> str:
+            return json.dumps({
+                "ImpulseGenerator": {
+                    "amplitude": self.amplitude,
+                    "startTimeStep": self.startTimeStep
+                }})
 
     def __init__(self, param: Param) -> None:
         """

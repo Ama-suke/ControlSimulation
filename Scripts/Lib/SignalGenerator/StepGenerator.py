@@ -9,6 +9,7 @@
 # ----------------------------------------------------------------------------
 
 import numpy as np
+import json
 from Lib.SignalGenerator.SignalGenerator import SignalGenerator
 
 class StepGenerator(SignalGenerator):
@@ -39,6 +40,14 @@ class StepGenerator(SignalGenerator):
             self.stepValue = stepValue
             self.initialValue = initialValue
             self.startTimeStep = startTimeStep
+
+        def __str__(self) -> str:
+            return json.dumps({
+                "StepGenerator": {
+                    "stepValue": self.stepValue,
+                    "initialValue": self.initialValue,
+                    "startTimeStep": self.startTimeStep
+                }})
 
     def __init__(self, param: Param) -> None:
         """

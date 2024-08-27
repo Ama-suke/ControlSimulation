@@ -9,6 +9,7 @@
 # ----------------------------------------------------------------------------
 
 import numpy as np
+import json
 
 from Control.Abstract.Plant import Plant
 from Lib.Utils.StateSpace import StateSpace
@@ -47,6 +48,19 @@ class Pendulum(Plant):
             self.tauMin = tauMin
             self.tauMax = tauMax
 
+        def __str__(self) -> str:
+            return json.dumps({
+                "Pendulum": {
+                    "m": self.m,
+                    "J": self.J,
+                    "D": self.D,
+                    "l": self.l,
+                    "g": self.g,
+                    "tauMin": self.tauMin,
+                    "tauMax": self.tauMax
+                }
+            })
+
     def __init__(self, plantParam: Param, solverType = StateSpace.SolverType.RUNGE_KUTTA, initialState = None) -> None:
         """
         constructor
@@ -78,12 +92,13 @@ class Pendulum(Plant):
         l = param.l
         g = param.g
         tau = self.GetSaturatedInput(curInput)[0]
+        dist = curInput[1]
 
         theta = curState[0]
         omega = curState[1]
 
         dTheta = omega
-        dOmega = (tau + m * g * l * np.sin(theta) - D * omega) / J
+        dOmega = (tau + dist + m * g * l * np.sin(theta) - D * omega) / J
 
         return np.array([dTheta, dOmega])
     

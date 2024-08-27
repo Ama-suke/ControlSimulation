@@ -1,29 +1,24 @@
 #!/usr/bin/env python
 # ----------------------------------------------------------------------------
-# * @file PidController.py
-# * @brief PID controller for inverted wheel pendulum
+# * @file OperatorController.py
+# * @brief Operator controller for inverted wheel pendulum
 # * @author hoshina
-# * @date 2024/07/02
+# * @date 2024/08/23
 # * @details 
 # *
 # ----------------------------------------------------------------------------
 
 import numpy as np
-import json
 
 from Control.Abstract.Controller import Controller
 from Lib.Utils.PidServo import PidServo
-from Lib.Utils.Math import util_math
-from Control.Pendulum.Plant.Pendulum import Pendulum
 
-from DebugDataLogger import DebugDataLogger
-
-class PidController(Controller):
+class OperatorController(Controller):
     """
-    PID controller class
+    Operator controller class
 
     Constructor:
-        PidController(controllerParam)
+        OperatorController(controllerParam)
 
     Methods:
         ComputeControlInput: Compute control input
@@ -32,9 +27,9 @@ class PidController(Controller):
 
     class Param(Controller.Param):
         """
-        Parameters of PID controller
+        Parameters of operator controller
         """
-        def __init__(self, Kp: float, Ki: float, Kd: float, plantParam: Pendulum.Param) -> None:
+        def __init__(self, Kp: float, Ki: float, Kd: float) -> None:
             """
             constructor
 
@@ -45,13 +40,6 @@ class PidController(Controller):
                 
             """
             self.pidParam = PidServo.Param(Kp, Ki, Kd)
-            self.plantParam = plantParam
-
-        def __str__(self) -> str:
-            return json.dumps({
-                "PidController": {
-                    "pidParam": json.loads(str(self.pidParam))
-                }})
 
     def __init__(self, controllerParam: Param) -> None:
         """
@@ -74,36 +62,15 @@ class PidController(Controller):
             curState (np.array): current state
             prevSatInput (np.array): previous saturated input
             dt (float): time step
-            param (Param):  controller parameters
+            param (Param): controller parameters
 
         Returns:
             np.array: control input
         """
-        theta = curState[0]
-
-        if param.pidParam.Kp != 0.0:
-            self.pid_.ComputeAntiWindup(self.controlInput, prevSatInput[0], 1.0 / param.pidParam.Kp, dt)
-
-        angleControlInput = self.pid_.ComputeControlInput(refState[0], theta, dt)
-
-        self.controlInput = angleControlInput
-
-        satControlInput = util_math.ComputeInvertibleSat(angleControlInput, -param.plantParam.tauMax, param.plantParam.tauMax)
-
-        return np.array([satControlInput])
-    
-    def PushStateToLoggerImpl(self, refState: np.array, logger) -> None:
-        """
-        Push the state to the logger
-
-        Args:
-            refState (np.array): reference state
-            logger (DataLogger): data logger
-        """
-        logger.PushData(refState[0], "refTheta")
+        return self.pid_.ComputeControlInput(refState, curState, prevSatInput, dt)
 
 # ----------------------------------------------------------------------------
-# * @file PidController.py
+# * @file OperatorController.py
 # * History
 # * -------
-# * - 2024/07/02 New created.(By hoshina)
+# * - 2024/08/23 New created.(By hoshina)

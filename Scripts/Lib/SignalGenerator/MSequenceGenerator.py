@@ -9,6 +9,7 @@
 # ----------------------------------------------------------------------------
 
 import numpy as np
+import json
 from Lib.SignalGenerator.SignalGenerator import SignalGenerator
 
 class MSequenceGenerator(SignalGenerator):
@@ -46,6 +47,14 @@ class MSequenceGenerator(SignalGenerator):
             self.order = order
             self.amplitude = amplitude
             self.offset = offset
+
+        def __str__(self) -> str:
+            return json.dumps({
+                "MSequenceGenerator": {
+                    "order": self.order,
+                    "amplitude": self.amplitude,
+                    "offset": self.offset
+                }})
 
     def __init__(self, param: Param) -> None:
         self.param_ = param

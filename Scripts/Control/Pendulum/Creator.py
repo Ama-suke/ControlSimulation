@@ -12,8 +12,9 @@ from Lib.SignalGenerator.SignalGenerator import SignalGenerator
 from Control.Abstract.Plant import Plant
 from Control.Abstract.Controller import Controller
 
-from Control.Pendulum.Parameter import Parameter, ControllerType
+from Control.Pendulum.Parameter import Parameter, ControllerType, PlantType
 from Control.Pendulum.Plant.Pendulum import Pendulum
+from Control.Pendulum.Plant.EquivalentSaturateModel import EquivalentSaturateModel
 from Control.Pendulum.Controller.PidController import PidController
 from Lib.SignalGenerator.ImpulseGenerator import ImpulseGenerator
 from Lib.SignalGenerator.MSequenceGenerator import MSequenceGenerator
@@ -23,7 +24,13 @@ def CreatePlant() -> Plant:
     """
     Create inverted wheel pendulum plant
     """
-    return Pendulum(Parameter().plantParam, initialState=Parameter().initialStates)
+    p = Parameter()
+    if p.plantType == PlantType.ACTUAL:
+        return Pendulum(p.plantParam, solverType=p.solverType, initialState=p.initialStates)
+    elif p.plantType == PlantType.EQUIVALENT:
+        return EquivalentSaturateModel(p.equivalentPlantParam, solverType=p.solverType, initialState=p.initialStates)
+    else:
+        raise ValueError("Invalid plant type")
 
 def CreateController() -> Controller:
     """

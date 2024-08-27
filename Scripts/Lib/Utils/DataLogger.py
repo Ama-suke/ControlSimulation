@@ -48,22 +48,23 @@ class DataLogger:
         Args:
             fileName (str): file name
         """
-        csvStr = ""
-        for key, data in self.dataBuffer_.items():
-            csvStr += key + ","
-        csvStr = csvStr[:-1]
-        csvStr += "\n"
-        for i in range(len(data)):
-            for key, data in self.dataBuffer_.items():
-                if i >= len(data):
-                    break
-                
-                csvStr += str(data[i]) + ","
-            csvStr = csvStr[:-1]
-            csvStr += "\n"
-
+        if len(self.dataBuffer_) == 0:  
+            return
+        
         with open(fileName, mode='w') as f:
-            f.write(csvStr)
+            labels = ""
+            for key, data in self.dataBuffer_.items():
+                labels += key + ","
+            labels = labels[:-1]
+            f.write(labels + "\n")
+            
+            for i in range(len(data)):
+                dataStr = ""
+                for key, data in self.dataBuffer_.items():
+                    dataStr += str(data[i]) + ","
+                dataStr = dataStr[:-1]
+                f.write(dataStr + "\n")
+        self.dataBuffer_.clear()
 
     def GetData():
         pass
