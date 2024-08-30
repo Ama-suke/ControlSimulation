@@ -16,11 +16,14 @@ import datetime
 
 from Lib.Utils.DataLogger import DataLogger
 from DebugDataLogger import DebugDataLogger
+from Control.Abstract.Controller import Controller
+from Control.Abstract.Plant import Plant
 
 from Lib.SignalGenerator.SignalGenerator import SignalGenerator
 from Lib.SignalGenerator.ImpulseGenerator import ImpulseGenerator
 from Lib.SignalGenerator.MSequenceGenerator import MSequenceGenerator
 from Lib.SignalGenerator.StepGenerator import StepGenerator
+from Lib.SignalGenerator.SinGenerator import SinGenerator
 
 defaultProgram = "InvertedWheelPendulum"
 
@@ -31,8 +34,8 @@ def main(program: str):
     # Load the program
     Creator = ImportProgram(program)
     parameter = Creator.GetParameter()
-    plant = Creator.CreatePlant()
-    controller = Creator.CreateController()
+    plant: Plant = Creator.CreatePlant()
+    controller: Controller = Creator.CreateController()
 
     # Create signal generators
     refGenerators = []
@@ -60,7 +63,6 @@ def main(program: str):
             ref[j] = refGenerators[j].GenerateSignal(i, parameter.dt)
         for j in range(len(distGenerators)):
             dist[j] = distGenerators[j].GenerateSignal(i, parameter.dt)
-
 
         # controller
         sens = plant.GetOutput(satControlInput)
@@ -91,6 +93,21 @@ def main(program: str):
     DebugDataLogger.SaveLoggedData(f"{dataPath}/debug.csv")
     parameter.SaveToFile(f"{dataPath}/parameter.json")
 
+    # Delete old data if there are more than 10 directories
+    dataDir = "../Data"
+    dirs = [os.path.join(dataDir, d) for d in os.listdir(dataDir) if os.path.isdir(os.path.join(dataDir, d))]
+    if len(dirs) > 10:
+        dirs.sort()
+        num_dirs_to_delete = len(dirs) - 10
+        for i in range(num_dirs_to_delete):
+            dirPath = dirs[i]
+            for root, subdirs, files in os.walk(dirPath, topdown=False):
+                for name in files:
+                    os.remove(os.path.join(root, name))
+                for name in subdirs:
+                    os.rmdir(os.path.join(root, name))
+            os.rmdir(dirPath)
+
     print("Finish")
 
 def ImportProgram(program: str):
@@ -116,6 +133,8 @@ def CreateSignalGenerator(param: SignalGenerator.Param) -> SignalGenerator:
         return ImpulseGenerator(param)
     elif isinstance(param, MSequenceGenerator.Param):
         return MSequenceGenerator(param)
+    elif isinstance(param, SinGenerator.Param):
+        return SinGenerator(param)
     else:
         raise ValueError("Invalid reference generator type")
 

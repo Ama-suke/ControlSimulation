@@ -15,6 +15,7 @@ from Control.Abstract.Controller import Controller
 from Lib.Utils.PidServo import PidServo
 from Lib.Utils.Math import util_math
 from Control.Pendulum.Plant.Pendulum import Pendulum
+from Lib.Utils.DataLogger import DataLogger
 
 from DebugDataLogger import DebugDataLogger
 
@@ -42,6 +43,7 @@ class PidController(Controller):
                 Kp (float): proportional gain
                 Ki (float): integral gain
                 Kd (float): derivative gain
+                plantParam (Pendulum.Param): parameters of the plant
                 
             """
             self.pidParam = PidServo.Param(Kp, Ki, Kd)
@@ -88,11 +90,11 @@ class PidController(Controller):
 
         self.controlInput = angleControlInput
 
-        satControlInput = util_math.ComputeInvertibleSat(angleControlInput, -param.plantParam.tauMax, param.plantParam.tauMax)
+        satControlInput = util_math.InvertibleSat(angleControlInput, -param.plantParam.tauMax, param.plantParam.tauMax, alpha=param.plantParam.alpha)
 
         return np.array([satControlInput])
     
-    def PushStateToLoggerImpl(self, refState: np.array, logger) -> None:
+    def PushStateToLoggerImpl(self, refState: np.array, logger: DataLogger) -> None:
         """
         Push the state to the logger
 

@@ -25,9 +25,9 @@ class Pendulum(Plant):
 
     class Param(Plant.Param):
         """
-        Parameters of inverted wheel pendulum
+        Parameters of pendulum
         """
-        def __init__(self, m, J, D, l, g, tauMin, tauMax) -> None:
+        def __init__(self, m, J, D, l, g, f0, k, tauMin, tauMax, alpha) -> None:
             """
             constructor
 
@@ -37,16 +37,22 @@ class Pendulum(Plant):
                 D (float): damping coefficient
                 l (float): length
                 g (float): gravitational acceleration
+                f0 (float): friction coefficient
+                k (float): friction parameter
                 tauMin (float): minimum input. Set "None" if no limit
                 tauMax (float): maximum input. Set "None" if no limit
+                alpha (float): shape parameter of the saturation function
             """
             self.m = m
             self.J = J
             self.D = D
             self.l = l
             self.g = g
+            self.f0 = f0
+            self.k = k
             self.tauMin = tauMin
             self.tauMax = tauMax
+            self.alpha = alpha
 
         def __str__(self) -> str:
             return json.dumps({
@@ -56,8 +62,11 @@ class Pendulum(Plant):
                     "D": self.D,
                     "l": self.l,
                     "g": self.g,
+                    "f0": self.f0,
+                    "k": self.k,
                     "tauMin": self.tauMin,
-                    "tauMax": self.tauMax
+                    "tauMax": self.tauMax,
+                    "alpha": self.alpha
                 }
             })
 
@@ -74,7 +83,7 @@ class Pendulum(Plant):
         super().__init__(stateOrder, plantParam, solverType, initialState)
 
     # private ------------------------------------------------------
-    def StateEquation(self, curState, curInput, param):
+    def StateEquation(self, curState, curInput, param: Param):
         """
         State equation of pendulum
 
@@ -91,6 +100,8 @@ class Pendulum(Plant):
         D = param.D
         l = param.l
         g = param.g
+        f0 = param.f0
+        k = param.k
         tau = self.GetSaturatedInput(curInput)[0]
         dist = curInput[1]
 
@@ -99,10 +110,11 @@ class Pendulum(Plant):
 
         dTheta = omega
         dOmega = (tau + dist + m * g * l * np.sin(theta) - D * omega) / J
+        dOmega += -f0 * np.exp(1 - k * np.abs(omega)) * np.sign(omega) / J
 
         return np.array([dTheta, dOmega])
     
-    def OutputEquation(self, curState, curInput, param):
+    def OutputEquation(self, curState, curInput, param: Param):
         """
         Output equation of inverted wheel pendulum
 
@@ -116,7 +128,7 @@ class Pendulum(Plant):
         """
         return np.array([curState[0]])
     
-    def GetSaturatedInputImpl(self, u: np.array, param: np.array) -> np.array:
+    def GetSaturatedInputImpl(self, u: np.array, param: Param) -> np.array:
         """
         Get the saturated input.
         

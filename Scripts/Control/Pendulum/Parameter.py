@@ -16,12 +16,15 @@ from Lib.Utils.StateSpace import StateSpace
 from Lib.SignalGenerator.ImpulseGenerator import ImpulseGenerator
 from Lib.SignalGenerator.MSequenceGenerator import MSequenceGenerator
 from Lib.SignalGenerator.StepGenerator import StepGenerator
+from Lib.SignalGenerator.SinGenerator import SinGenerator
 from Control.Pendulum.Controller.PidController import PidController
+from Control.Pendulum.Controller.OperatorController import OperatorController
 from Control.Pendulum.Plant.Pendulum import Pendulum
 from Control.Pendulum.Plant.EquivalentSaturateModel import EquivalentSaturateModel
 
 class ControllerType(Enum):
     PID = 0
+    OPERATOR = 1
 
 class PlantType(Enum):
     ACTUAL = 0
@@ -29,36 +32,33 @@ class PlantType(Enum):
 
 class Parameter:
     dt = 0.01           # time step
-    stopTime = 20       # simulation time
+    stopTime = 10       # simulation time
 
-    solverType = StateSpace.SolverType.EULER  # solver type
+    solverType = StateSpace.SolverType.RUNGE_KUTTA  # solver type
     initialStates = [0, 0]    # initial states
 
-    controllerType = ControllerType.PID
-    plantType = PlantType.EQUIVALENT
+    controllerType = ControllerType.OPERATOR
+    plantType = PlantType.ACTUAL
 
     plantParam = Pendulum.Param(
-        J = 0.01,   # moment of inertia of the pendulum
-        m = 0.1,    # mass of the pendulum
-        l = 0.5,    # length of the pendulum
-        D = 0.01,   # damping coefficient
-        g = 9.81,   # gravitational acceleration
-        tauMin = -50,   # minimum input. Set "None" if no limit
-        tauMax = 50     # maximum input. Set "None" if no limit
+        J = 0.001,   # moment of inertia of the pendulum
+        m = 0.054347,    # mass of the pendulum
+        l = 0.065,    # length of the pendulum
+        D = 0.001,   # damping coefficient
+        g = 9.80665,   # gravitational acceleration
+        f0 = 0.01,  # friction coefficient
+        k = 10,   # friction parameter
+        tauMin = -0.02,   # minimum input. Set "None" if no limit
+        tauMax = 0.02,     # maximum input. Set "None" if no limit
+        alpha = 0.50  # shape parameter of the saturation function
     )
     equivalentPlantParam = EquivalentSaturateModel.Param(
-        m = plantParam.m,    # mass
-        J = plantParam.J,   # moment of inertia
-        D = plantParam.D,   # damping coefficient
-        l = plantParam.l,    # length
-        g = plantParam.g,   # gravitational acceleration
-        tauMin = plantParam.tauMin,   # minimum input. Set "None" if no limit
-        tauMax = plantParam.tauMax,    # maximum input. Set "None" if no limit
+        baseParam = plantParam,
         Kp = 5.0,      # proportional gain
         Kd = 0.1,      # derivative gain
-        wMin = -100,  # minimum quasi-state
-        wMax = 100,   # maximum quasi-state
-        deltaDDisabled = True  # True if the uncertainty ΔD is disabled
+        wMin = -0.02,  # minimum quasi-state
+        wMax = 0.02,   # maximum quasi-state
+        deltaDDisabled = False  # True if the uncertainty ΔD is disabled
     )
     
     pidControllerParam = PidController.Param(
@@ -67,19 +67,31 @@ class Parameter:
         Kd = 0.01,      # derivative gain for angle
         plantParam=plantParam
     )
+    operatorControllerParam = OperatorController.Param(
+        Kp = 0.20,        # proportional gain for angle
+        Kd = 0.01,       # derivative gain for angle
+        tau = 0.01,      # time constant of the operator
+        gF = 0.00,       # gain of friction compensation
+        plantParam = plantParam
+    )
 
     referenceGeneratorParams = [
+        SinGenerator.Param(
+            amplitude=0.10,  # amplitude of the sine wave
+            frequency=1/(2*np.pi),    # frequency of the sine wave
+            phase=np.pi/2         # phase of the sine wave
+        ),
         StepGenerator.Param(
-            stepValue=0,  # step value
-            initialValue=0,  # initial value
-            startTimeStep=stopTime / dt / 2  # time step of the step
-        )
+            stepValue=0.1,  # step value
+            initialValue=0.0,  # initial value
+            startTimeStep=0  # time step of the step
+        ),
     ]
 
     disturbanceGeneratorParams = [
         ImpulseGenerator.Param(
-            amplitude=50.0,  # amplitude of the impulse
-            startTimeStep=stopTime / dt * 1/4  # time step of the impulse
+            amplitude=0.0,  # amplitude of the impulse
+            startTimeStep=1  # time step of the impulse
         )
     ]
 

@@ -50,17 +50,18 @@ class SignalGenerator(ABC):
         Returns:
             float: signal
         """
-        return self.GenerateSignalImpl(k, dt)
+        return self.GenerateSignalImpl(k, dt, self.param_)
     
     # private -----------------------------------------------------
     @abstractmethod
-    def GenerateSignalImpl(self, k: int, dt: float) -> float:
+    def GenerateSignalImpl(self, k: int, dt: float, param: Param) -> float:
         """
         Generate a signal
 
         Args:
             k (int): discrete time
             dt (float): sampling time
+            param (Param): parameters of signal generator
 
         Returns:
             float: signal

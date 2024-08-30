@@ -12,6 +12,7 @@ import numpy as np
 import json
 
 from Control.Abstract.Plant import Plant
+from Control.Pendulum.Plant.Pendulum import Pendulum
 from Lib.Utils.StateSpace import StateSpace
 from Lib.Utils.DataLogger import DataLogger
 from Lib.Utils.Math import util_math
@@ -30,31 +31,19 @@ class EquivalentSaturateModel(Plant):
         """
         Parameters of inverted wheel pendulum
         """
-        def __init__(self, m, J, D, l, g, tauMin, tauMax, Kp, Kd, wMin, wMax, deltaDDisabled) -> None:
+        def __init__(self, baseParam: Pendulum.Param, Kp, Kd, wMin, wMax, deltaDDisabled) -> None:
             """
             constructor
 
             Args:
-                m (float): mass
-                J (float): moment of inertia
-                D (float): damping coefficient
-                l (float): length
-                g (float): gravitational acceleration
-                tauMin (float): minimum input. Set "None" if no limit
-                tauMax (float): maximum input. Set "None" if no limit
+                baseParam (Pendulum.Param): base parameters
                 Kp (float): proportional gain
                 Kd (float): derivative gain
-                wMin (float): minimum quasi-state
-                wMax (float): maximum quasi-state
+                wMin (float): minimum value of quasi-state
+                wMax (float): maximum value of quasi-state
                 deltaDDisabled (bool): True if the uncertainty ΔD is disabled
             """
-            self.m = m
-            self.J = J
-            self.D = D
-            self.l = l
-            self.g = g
-            self.tauMin = tauMin
-            self.tauMax = tauMax
+            self.base = baseParam
             self.Kp = Kp
             self.Kd = Kd
             self.wMin = wMin
@@ -64,17 +53,6 @@ class EquivalentSaturateModel(Plant):
         def __str__(self) -> str:
             return json.dumps({
                 "EquivalentPendulum": {
-                    "m": self.m,
-                    "J": self.J,
-                    "D": self.D,
-                    "l": self.l,
-                    "g": self.g,
-                    "tauMin": self.tauMin,
-                    "tauMax": self.tauMax,
-                    "Kp": self.Kp,
-                    "Kd": self.Kd,
-                    "wMin": self.wMin,
-                    "wMax": self.wMax,
                     "deltaDDisabled": self.deltaDDisabled
                 }
             })
@@ -95,7 +73,7 @@ class EquivalentSaturateModel(Plant):
         self.w = np.array([0.0])
 
     # private ------------------------------------------------------
-    def StateEquation(self, curState, curInput, param):
+    def StateEquation(self, curState, curInput, param: Param):
         """
         State equation of pendulum
 
@@ -107,13 +85,14 @@ class EquivalentSaturateModel(Plant):
         Returns:
             np.array: derivative of the state
         """
-        m = param.m
-        J = param.J
-        D = param.D
-        l = param.l
-        g = param.g
+        m = param.base.m
+        J = param.base.J
+        D = param.base.D
+        l = param.base.l
+        g = param.base.g
         Kp = param.Kp
         Kd = param.Kd
+        alpha = param.base.alpha
         tau = curInput[0]
         dist = curInput[1]
 
@@ -140,7 +119,7 @@ class EquivalentSaturateModel(Plant):
         DebugDataLogger.PushData(thetaD, "thetaD")
 
         # saturation
-        wSat = util_math.ComputeInvertibleSat(w, param.wMin, param.wMax)
+        wSat = util_math.InvertibleSat(w, param.wMin, param.wMax, alpha)
         DebugDataLogger.PushData(wSat, "quasi-stateSat")
 
         # N
@@ -166,7 +145,7 @@ class EquivalentSaturateModel(Plant):
         """
         return np.array([curState[0]])
     
-    def GetSaturatedInputImpl(self, u: np.array, param: np.array) -> np.array:
+    def GetSaturatedInputImpl(self, u: np.array, param: Param) -> np.array:
         """
         Get the saturated input.
         
@@ -177,8 +156,8 @@ class EquivalentSaturateModel(Plant):
         Returns:
             np.array: saturated input
         """
-        tauMin = param.tauMin
-        tauMax = param.tauMax
+        tauMin = param.base.tauMin
+        tauMax = param.base.tauMax
 
         return np.array([np.clip(u[0], tauMin, tauMax)])
     
@@ -194,7 +173,7 @@ class EquivalentSaturateModel(Plant):
         logger.PushData(self.stateVariable_[1], "omega")
         logger.PushData(curInput[0], "tau")
 
-    def ComputeDeltaD(self, curState, curQuasiState, param) -> np.array:
+    def ComputeDeltaD(self, curState, curQuasiState, param: Param) -> np.array:
         """
         Compute the state equation of ΔD
         formula : ΔD = σ_u^-1 D σ_w - D
@@ -204,13 +183,14 @@ class EquivalentSaturateModel(Plant):
             float: output of ΔD
         """
 
-        m = param.m
-        J = param.J
-        D = param.D
-        l = param.l
-        g = param.g
+        m = param.base.m
+        J = param.base.J
+        D = param.base.D
+        l = param.base.l
+        g = param.base.g
         Kp = param.Kp
         Kd = param.Kd
+        alpha = param.base.alpha
 
         thetaD1 = curState[0]
         omegaD1 = curState[1]
@@ -222,11 +202,11 @@ class EquivalentSaturateModel(Plant):
         u1 = Kp * (thetaD1 - w) - Kd * omegaD1 - m * g * l * np.sin(thetaD1)
 
         # σ_u^-1 D σ_w
-        wSat = util_math.ComputeInvertibleSat(w, param.wMin, param.wMax)
+        wSat = util_math.InvertibleSat(w, param.wMin, param.wMax, alpha)
         u2Sat = Kp * (thetaD2 - wSat) - Kd * omegaD2 - m * g * l * np.sin(thetaD2)
         dThetaD2 = omegaD2
         dOmegaD2 = (-(D + Kd) * omegaD2 - Kp * (thetaD2 - wSat)) / J
-        u2 = util_math.ComputeInvertibleSatInv(u2Sat, param.tauMin, param.tauMax)
+        u2 = util_math.InvertibleSatInv(u1, param.base.tauMin, param.base.tauMax, alpha)
 
         DebugDataLogger.PushData(u2, "tau2DeltaD")
 

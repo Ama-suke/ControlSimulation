@@ -57,21 +57,11 @@ class MSequenceGenerator(SignalGenerator):
                 }})
 
     def __init__(self, param: Param) -> None:
-        self.param_ = param
-        self.mSeq_ = self.GenerateMSeq(self.param_.order)
+        super.__init__(param)
+        self.mSeq_ = self.GenerateMSeq(param.order)
 
-    def GenerateSignalImpl(self, k: int, dt: float) -> np.array:
-        """
-        Generate M-sequence signal
-
-        Args:
-            k (int): current step
-            dt (float): time step
-
-        Returns:
-            np.array: generated signal
-        """
-        p = self.param_
+    def GenerateSignalImpl(self, k: int, dt: float, param: Param) -> np.array:
+        p = param
 
         sig = 2 * p.amplitude * (np.array(self.mSeq_[k % len(self.mSeq_)]) - 0.5) + p.offset
         return np.array([sig])

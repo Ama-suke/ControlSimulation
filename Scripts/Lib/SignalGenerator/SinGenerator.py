@@ -1,49 +1,46 @@
 #!/usr/bin/env python
 # ----------------------------------------------------------------------------
-# * @file ImpulseGenerator.py
-# * @brief Impulse signal generator
+# * @file SinGenerator.Py
+# * @brief Sine signal generator
 # * @author hoshina
-# * @date 2024/08/03
+# * @date 2024/08/30
 # * @details 
 # *
 # ----------------------------------------------------------------------------
+
 
 import numpy as np
 import json
 from Lib.SignalGenerator.SignalGenerator import SignalGenerator
 
-class ImpulseGenerator(SignalGenerator):
+class SinGenerator(SignalGenerator):
     """
-    Impulse signal generator
-
-    Constructor:
-        ImpulseGenerator(param)
-
-    Methods:
-        GenerateSignal: Generate a signal
-            GenerateSignal(t, dt)
+    Sine signal generator
     """
 
     class Param(SignalGenerator.Param):
         """
         Parameters of impulse signal generator
         """
-        def __init__(self, amplitude: float, startTimeStep: int) -> None:
+        def __init__(self, amplitude: float, frequency: float, phase: float) -> None:
             """
             constructor
 
             Args:
-                amplitude (float): amplitude of impulse
-                startTimeStep (int): start time step
+                amplitude (float): amplitude of sine wave
+                frequency (float): frequency of sine wave (Hz)
+                phase (float): phase of sine wave (rad)
             """
             self.amplitude = amplitude
-            self.startTimeStep = startTimeStep
+            self.frequency = frequency
+            self.phase = phase
 
         def __str__(self) -> str:
             return json.dumps({
                 "ImpulseGenerator": {
                     "amplitude": self.amplitude,
-                    "startTimeStep": self.startTimeStep
+                    "frequency": self.frequency,
+                    "phase": self.phase
                 }})
 
     def __init__(self, param: Param) -> None:
@@ -56,24 +53,11 @@ class ImpulseGenerator(SignalGenerator):
         super().__init__(param)
 
     def GenerateSignalImpl(self, k: int, dt: float, param: Param) -> float:
-        """
-        Generate a signal
+        return param.amplitude * np.sin(2 * np.pi * param.frequency * dt * k + param.phase)
 
-        Args:
-            k (int): discrete time
-            dt (float): sampling time
-            param (Param): parameters of impulse signal generator
-
-        Returns:
-            float: signal
-        """
-        if k == param.startTimeStep:
-            return param.amplitude
-        else:
-            return 0.0
 
 # ----------------------------------------------------------------------------
-# * @file ImpulseGenerator.py
+# * @file SinGenerator.Py
 # * History
 # * -------
-# * - 2024/08/03 New created.(By hoshina)
+# * - 2024/08/30 New created.(By hoshina)

@@ -58,21 +58,11 @@ class StepGenerator(SignalGenerator):
         """
         super().__init__(param)
 
-    def GenerateSignalImpl(self, k: int, dt: float) -> float:
-        """
-        Generate a signal
-
-        Args:
-            k (int): discrete time
-            dt (float): sampling time
-
-        Returns:
-            float: signal
-        """
-        if k >= self.param_.startTimeStep:
-            return self.param_.stepValue
+    def GenerateSignalImpl(self, k: int, dt: float, param: Param) -> float:
+        if k >= param.startTimeStep:
+            return param.stepValue
         else:
-            return self.param_.initialValue
+            return param.initialValue
         
 
 # ----------------------------------------------------------------------------
