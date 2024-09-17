@@ -12,9 +12,9 @@ import numpy as np
 import json
 
 from Control.Abstract.Controller import Controller
-from Lib.Utils.PidServo import PidServo
+from Lib.Compensator.PidServo import PidServo
 from Lib.Utils.Math import util_math
-from Control.Pendulum.Plant.Pendulum import Pendulum
+from Control.SimplePendulum.Plant.Pendulum import Pendulum
 from Lib.Utils.DataLogger import DataLogger
 
 from DebugDataLogger import DebugDataLogger
@@ -35,24 +35,23 @@ class PidController(Controller):
         """
         Parameters of PID controller
         """
-        def __init__(self, Kp: float, Ki: float, Kd: float, plantParam: Pendulum.Param) -> None:
+        def __init__(self, pidParam: PidServo.Param, plantParam: Pendulum.Param) -> None:
             """
             constructor
 
             Args:
-                Kp (float): proportional gain
-                Ki (float): integral gain
-                Kd (float): derivative gain
+                pidParam (PidServo.Param): parameters of the PID controller
                 plantParam (Pendulum.Param): parameters of the plant
                 
             """
-            self.pidParam = PidServo.Param(Kp, Ki, Kd)
+            self.pidParam = pidParam
             self.plantParam = plantParam
 
         def __str__(self) -> str:
             return json.dumps({
                 "PidController": {
-                    "pidParam": json.loads(str(self.pidParam))
+                    "pidParam": json.loads(str(self.pidParam)),
+                    "plantParam": json.loads(str(self.plantParam))
                 }})
 
     def __init__(self, controllerParam: Param) -> None:
@@ -67,19 +66,19 @@ class PidController(Controller):
         self.controlInput = 0.0
 
     # private ------------------------------------------------------
-    def ComputeControlInputImpl(self, refState: np.array, curState: np.array, prevSatInput: np.array, dt: float, param: Param) -> np.array:
+    def ComputeControlInputImpl(self, refState: np.ndarray, curState: np.ndarray, prevSatInput: np.ndarray, dt: float, param: Param) -> np.ndarray:
         """
         Compute control input
 
         Args:
-            refState (np.array): reference state
-            curState (np.array): current state
-            prevSatInput (np.array): previous saturated input
+            refState (np.ndarray): reference state
+            curState (np.ndarray): current state
+            prevSatInput (np.ndarray): previous saturated input
             dt (float): time step
             param (Param):  controller parameters
 
         Returns:
-            np.array: control input
+            np.ndarray: control input
         """
         theta = curState[0]
 
@@ -94,15 +93,16 @@ class PidController(Controller):
 
         return np.array([satControlInput])
     
-    def PushStateToLoggerImpl(self, refState: np.array, logger: DataLogger) -> None:
+    def PushStateToLoggerImpl(self, refState: np.ndarray, curState: np.ndarray, dataLogger: DataLogger) -> None:
         """
         Push the state to the logger
 
         Args:
-            refState (np.array): reference state
-            logger (DataLogger): data logger
+            refState (np.ndarray): reference state
+            dataLogger (DataLogger): data logger
         """
-        logger.PushData(refState[0], "refTheta")
+        dataLogger.PushData(refState[0], "Ref")
+        dataLogger.PushData(refState[1] - curState[0], "Error")
 
 # ----------------------------------------------------------------------------
 # * @file PidController.py

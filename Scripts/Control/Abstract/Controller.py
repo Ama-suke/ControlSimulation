@@ -40,18 +40,18 @@ class Controller(ABC):
         """
         self.param_ = controllerParam
 
-    def ComputeControlInput(self, refState: np.array, curState: np.array, prevSatInput: np.array, dt: float) -> np.array:
+    def ComputeControlInput(self, refState: np.ndarray, curState: np.ndarray, prevSatInput: np.ndarray, dt: float) -> np.ndarray:
         """
         Compute control input
 
         Args:
-            refState (np.array): reference state
-            curState (np.array): current state
-            prevSatInput (np.array): previous saturated input
+            refState (np.ndarray): reference state
+            curState (np.ndarray): current state
+            prevSatInput (np.ndarray): previous saturated input
             dt (float): time step
 
         Returns:
-            np.array: control input
+            np.ndarray: control input
         """
         tmpRefState = refState
         tmpCurState = curState
@@ -70,44 +70,47 @@ class Controller(ABC):
 
         return controlInput
     
-    def PushStateToLogger(self, refState: np.array, dataLogger: DataLogger) -> None:
+    def PushStateToLogger(self, refState: np.ndarray, curState: np.ndarray, dataLogger: DataLogger) -> None:
         """
         Push the state to the data logger
 
         Args:
-            controlInput (np.array): control input
+            controlInput (np.ndarray): control input
             dataLogger (DataLogger): data logger
         """
         tmpRefState = refState
+        tmpCurState = curState
         if not isinstance(refState, np.ndarray):
             tmpRefState = np.array([refState])
-        self.PushStateToLoggerImpl(tmpRefState, dataLogger)
+        if not isinstance(curState, np.ndarray):
+            tmpCurState = np.array([curState])
+        self.PushStateToLoggerImpl(tmpRefState, tmpCurState, dataLogger)
 
     # private ------------------------------------------------------
     @abstractmethod
-    def ComputeControlInputImpl(self, refState: np.array, curState: np.array, prevSatInput: np.array, dt: float, param: Param) -> np.array:
+    def ComputeControlInputImpl(self, refState: np.ndarray, curState: np.ndarray, prevSatInput: np.ndarray, dt: float, param: Param) -> np.ndarray:
         """
         Compute control input
 
         Args:
-            refState (np.array): reference state
-            curState (np.array): current state
-            prevSatInput (np.array): previous saturated input
+            refState (np.ndarray): reference state
+            curState (np.ndarray): current state
+            prevSatInput (np.ndarray): previous saturated input
             dt (float): time step
             param (Param): controller parameters
 
         Returns:
-            np.array: control input
+            np.ndarray: control input
         """
         pass
 
     @abstractmethod
-    def PushStateToLoggerImpl(self, refState: np.array, dataLogger: DataLogger) -> None:
+    def PushStateToLoggerImpl(self, refState: np.ndarray, dataLogger: DataLogger) -> None:
         """
         Push the state to the data logger
 
         Args:
-            controlInput (np.array): control input
+            controlInput (np.ndarray): control input
             dataLogger (DataLogger): data logger
         """
         pass

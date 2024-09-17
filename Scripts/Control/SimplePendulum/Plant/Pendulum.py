@@ -12,7 +12,7 @@ import numpy as np
 import json
 
 from Control.Abstract.Plant import Plant
-from Lib.Utils.StateSpace import StateSpace
+from Lib.Compensator.StateSpace import StateSpace
 from Lib.Utils.DataLogger import DataLogger
 
 class Pendulum(Plant):
@@ -27,29 +27,31 @@ class Pendulum(Plant):
         """
         Parameters of pendulum
         """
-        def __init__(self, m, J, D, l, g, f0, k, tauMin, tauMax, alpha) -> None:
+        def __init__(self, m, J, B, l, g, f0, vSigma, R, tauMin, tauMax, alpha) -> None:
             """
             constructor
 
             Args:
                 m (float): mass
                 J (float): moment of inertia
-                D (float): damping coefficient
+                B (float): damping coefficient
                 l (float): length
                 g (float): gravitational acceleration
                 f0 (float): friction coefficient
-                k (float): friction parameter
+                vSigma (float): stribeck velocity
+                R (float): reduction ratio
                 tauMin (float): minimum input. Set "None" if no limit
                 tauMax (float): maximum input. Set "None" if no limit
                 alpha (float): shape parameter of the saturation function
             """
             self.m = m
             self.J = J
-            self.D = D
+            self.B = B
             self.l = l
             self.g = g
             self.f0 = f0
-            self.k = k
+            self.vSigma = vSigma
+            self.R = R
             self.tauMin = tauMin
             self.tauMax = tauMax
             self.alpha = alpha
@@ -59,11 +61,12 @@ class Pendulum(Plant):
                 "Pendulum": {
                     "m": self.m,
                     "J": self.J,
-                    "D": self.D,
+                    "D": self.B,
                     "l": self.l,
                     "g": self.g,
                     "f0": self.f0,
-                    "k": self.k,
+                    "k": self.vSigma,
+                    "R": self.R,
                     "tauMin": self.tauMin,
                     "tauMax": self.tauMax,
                     "alpha": self.alpha
@@ -77,84 +80,105 @@ class Pendulum(Plant):
         Args:
             plantParam (Param): plant parameters
             solverType (StateSpace.SolverType, optional): solver type. Defaults to StateSpace.SolverType.RUNGE_KUTTA.
-            initialState (np.array, optional): initial state. Defaults to zero.
+            initialState (np.ndarray, optional): initial state. Defaults to zero.
         """
         stateOrder = 2
         super().__init__(stateOrder, plantParam, solverType, initialState)
 
     # private ------------------------------------------------------
-    def StateEquation(self, curState, curInput, param: Param):
+    def StateEquation(self, curState: np.ndarray, curInput: np.ndarray, param: Param) -> np.ndarray:
         """
         State equation of pendulum
 
         Args:
-            curState (np.array): current state
-            curInput (np.array): current input
+            curState (np.ndarray): current state
+            curInput (np.ndarray): current input
             param (Param): parameters
 
         Returns:
-            np.array: derivative of the state
+            np.ndarray: derivative of the state
         """
         m = param.m
         J = param.J
-        D = param.D
+        B = param.B
         l = param.l
         g = param.g
         f0 = param.f0
-        k = param.k
+        vSigma = param.vSigma
+        R = param.R
         tau = self.GetSaturatedInput(curInput)[0]
         dist = curInput[1]
 
         theta = curState[0]
         omega = curState[1]
 
+        torque = R * tau + dist + self.ComputeFrictionTorque(omega, tau, param)
+
         dTheta = omega
-        dOmega = (tau + dist + m * g * l * np.sin(theta) - D * omega) / J
-        dOmega += -f0 * np.exp(1 - k * np.abs(omega)) * np.sign(omega) / J
+        dOmega = (torque + m * g * l * np.sin(theta) - B * omega) / J
 
         return np.array([dTheta, dOmega])
     
-    def OutputEquation(self, curState, curInput, param: Param):
+    def OutputEquation(self, curState: np.ndarray, curInput: np.ndarray, param: Param) -> np.ndarray:
         """
         Output equation of inverted wheel pendulum
 
         Args:
-            curState (np.array): current state
-            curInput (np.array): current input
+            curState (np.ndarray): current state
+            curInput (np.ndarray): current input
             param (Param): parameters
 
         Returns:
-            np.array: output
+            np.ndarray: output
         """
         return np.array([curState[0]])
     
-    def GetSaturatedInputImpl(self, u: np.array, param: Param) -> np.array:
+    def GetSaturatedInputImpl(self, u: np.ndarray, param: Param) -> np.ndarray:
         """
         Get the saturated input.
         
         Args:
-            u (np.array): input
-            param (np.array): parameters
+            u (np.ndarray): input
+            param (np.ndarray): parameters
 
         Returns:
-            np.array: saturated input
+            np.ndarray: saturated input
         """
         tauMin = param.tauMin
         tauMax = param.tauMax
 
         return np.array([np.clip(u[0], tauMin, tauMax)])
     
-    def PushStateToLoggerImpl(self, curInput: np.array, logger: DataLogger) -> None:
+    def PushStateToLoggerImpl(self, curInput: np.ndarray, logger: DataLogger) -> None:
         """
         Push the state to the logger
 
         Args:
-            curInput (np.array): current input
+            curInput (np.ndarray): current input
             logger (DataLogger): logger
         """
         logger.PushData(self.stateVariable_[0], "theta")
         logger.PushData(self.stateVariable_[1], "omega")
         logger.PushData(curInput[0], "tau")
+
+    def ComputeFrictionTorque(self, omega, tau, param: Param):
+        """
+        Compute friction torque
+
+        Args:
+            omega (float): angular velocity
+            param (Param): parameters
+
+        Returns:
+            float: friction torque
+        """
+        f0 = param.f0
+        vSigma = param.vSigma
+
+        if omega == 0:
+            return -np.min([f0, np.abs(tau)]) * np.sign(tau)
+
+        return -f0 * np.exp(-np.abs(omega) / vSigma) * np.sign(omega)
 
 # ----------------------------------------------------------------------------
 # * @file Pendulum.py

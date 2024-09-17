@@ -60,13 +60,13 @@ class MSequenceGenerator(SignalGenerator):
         super.__init__(param)
         self.mSeq_ = self.GenerateMSeq(param.order)
 
-    def GenerateSignalImpl(self, k: int, dt: float, param: Param) -> np.array:
+    def GenerateSignalImpl(self, k: int, dt: float, param: Param) -> np.ndarray:
         p = param
 
         sig = 2 * p.amplitude * (np.array(self.mSeq_[k % len(self.mSeq_)]) - 0.5) + p.offset
         return np.array([sig])
 
-    def GenerateMSeq(self, mSeqOrder: int) -> np.array:
+    def GenerateMSeq(self, mSeqOrder: int) -> np.ndarray:
         """
         Generate M-sequence
 
@@ -74,7 +74,7 @@ class MSequenceGenerator(SignalGenerator):
             mSeqOrder (int): order of M-sequence
 
         Returns:
-            np.array: generated M-sequence
+            np.ndarray: generated M-sequence
         """
         reg = [1] * mSeqOrder  # Example initialization
         mSeq = []

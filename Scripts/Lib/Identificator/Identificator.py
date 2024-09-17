@@ -50,13 +50,13 @@ class Identificator(ABC):
         self.param_ = param
         self.estimatedOutput_ = np.zeros(param.outputOrder)
 
-    def IdentifySystemModel(self, curInputs: np.array, curOutputs: np.array, dt: float) -> None:
+    def IdentifySystemModel(self, curInputs: np.ndarray, curOutputs: np.ndarray, dt: float) -> None:
         """
         Identify the system
 
         Args:
-            curInputs (np.array): input signals in the current step
-            curOutputs (np.array): output signals in the current step
+            curInputs (np.ndarray): input signals in the current step
+            curOutputs (np.ndarray): output signals in the current step
             dt (float): time step
         """
         tmpInputs = curInputs
@@ -68,12 +68,12 @@ class Identificator(ABC):
 
         self.IdentifySystemModelImpl(tmpInputs, tmpOutputs, dt)
 
-    def UpdateEstimatedOutput(self, curInputs: np.array, dt: float) -> None:
+    def UpdateEstimatedOutput(self, curInputs: np.ndarray, dt: float) -> None:
         """
         Update the estimated output
 
         Args:
-            curInputs (np.array): input signals in the current step
+            curInputs (np.ndarray): input signals in the current step
             dt (float): time step
         """
         tmpInputs = curInputs
@@ -82,12 +82,12 @@ class Identificator(ABC):
 
         return self.UpdateEstimatedOutputImpl(tmpInputs, dt)
     
-    def GetEstimatedOutput(self) -> np.array:
+    def GetEstimatedOutput(self) -> np.ndarray:
         """
         Get the estimated output
 
         Returns:
-            np.array: estimated output
+            np.ndarray: estimated output
         """
         return self.estimatedOutput_
     
@@ -100,24 +100,24 @@ class Identificator(ABC):
     
     # private -----------------------------------------------------
     @abstractmethod
-    def IdentifySystemModelImpl(self, curInputs: np.array, curOutputs: np.array, dt: float) -> None:
+    def IdentifySystemModelImpl(self, curInputs: np.ndarray, curOutputs: np.ndarray, dt: float) -> None:
         """
         Identify the system
 
         Args:
-            curInputs (np.array): input signals in the current step
-            curOutputs (np.array): output signals in the current step
+            curInputs (np.ndarray): input signals in the current step
+            curOutputs (np.ndarray): output signals in the current step
             dt (float): time step
         """
         pass
 
     @abstractmethod
-    def UpdateEstimatedOutputImpl(self, curInputs: np.array, dt: float) -> None:
+    def UpdateEstimatedOutputImpl(self, curInputs: np.ndarray, dt: float) -> None:
         """
         Update the estimated output
 
         Args:
-            curInputs (np.array): input signals in the current step
+            curInputs (np.ndarray): input signals in the current step
         """
         pass
 

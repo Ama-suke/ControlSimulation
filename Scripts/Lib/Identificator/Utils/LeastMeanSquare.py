@@ -25,7 +25,7 @@ class LeastMeanSquare:
     """
 
     class Param:
-        def __init__(self, paramNum: int, sampleNum: int, initialP: np.array, isOnline: bool) -> None:
+        def __init__(self, paramNum: int, sampleNum: int, initialP: np.ndarray, isOnline: bool) -> None:
             self.paramNum = paramNum    # number of parameters to identify
             self.sampleNum = sampleNum  # number of samples
             self.initialP = initialP    # initial P matrix
@@ -42,7 +42,7 @@ class LeastMeanSquare:
         self.isFinished_ = False
         self.identifiedParam_ = np.zeros(param.paramNum)
 
-    def DoIdentification(self, curInputs: np.array, curOutputs: np.array):
+    def DoIdentification(self, curInputs: np.ndarray, curOutputs: np.ndarray):
         if self.param_.isOnline:
             self.DoOnlineIdentification(curInputs, curOutputs)
         else:
@@ -52,7 +52,7 @@ class LeastMeanSquare:
         return self.identifiedParam_
 
     # private ---------------------------------------------------------------
-    def DoOnlineIdentification(self, curInputs: np.array, curOutputs: np.array):
+    def DoOnlineIdentification(self, curInputs: np.ndarray, curOutputs: np.ndarray):
         theta = self.identifiedParam_
         inputMatrix = curInputs[:, np.newaxis]
 
@@ -62,7 +62,7 @@ class LeastMeanSquare:
 
         self.identifiedParam_ = theta
 
-    def DoOfflineIdentification(self, curInputs: np.array, curOutputs: np.array):
+    def DoOfflineIdentification(self, curInputs: np.ndarray, curOutputs: np.ndarray):
         if self.isFinished_:
             return
 

@@ -9,7 +9,7 @@
 # ----------------------------------------------------------------------------
 
 import numpy as np
-from Lib.Utils.StateSpace import StateSpace
+from Lib.Compensator.StateSpace import StateSpace
 from abc import ABC, abstractmethod
 
 from Lib.Utils.DataLogger import DataLogger
@@ -40,7 +40,7 @@ class Plant(ABC):
 
     def __init__(self, stateOrder: int, plantParam: Param,
                  solverType: StateSpace.SolverType = StateSpace.SolverType.RUNGE_KUTTA,
-                 initialState: np.array = None) -> None:
+                 initialState: np.ndarray = None) -> None:
         """
         constructor
 
@@ -48,7 +48,7 @@ class Plant(ABC):
             stateOrder (int): state order
             plantParam (Param): plant parameters
             solverType (StateSpace.SolverType, optional): solver type. Defaults to StateSpace.SolverType.RUNGE_KUTTA.
-            initialState (np.array, optional): initial state. Defaults to zero.
+            initialState (np.ndarray, optional): initial state. Defaults to zero.
         """
         self.stateSpace_ = StateSpace(self.StateEquation, solverType)
         
@@ -60,12 +60,12 @@ class Plant(ABC):
 
         self.plantParam_ = plantParam
 
-    def UpdateState(self, curInput: np.array, dt: float) -> None:
+    def UpdateState(self, curInput: np.ndarray, dt: float) -> None:
         """
         Update the state of the plant
 
         Args:
-            curInput (np.array): current input
+            curInput (np.ndarray): current input
             dt (float): time step
         """
         tmpCurInput = curInput
@@ -79,19 +79,19 @@ class Plant(ABC):
         Get the current state
 
         Returns:
-            np.array: current state
+            np.ndarray: current state
         """
         return self.stateVariable_
     
-    def GetOutput(self, curInput: np.array) -> np.array:
+    def GetOutput(self, curInput: np.ndarray) -> np.ndarray:
         """
         Get the output of the plant
 
         Args:
-            curInput (np.array): current input
+            curInput (np.ndarray): current input
 
         Returns:
-            np.array: output
+            np.ndarray: output
         """
         tmpCurInput = curInput
         if not isinstance(curInput, np.ndarray):
@@ -99,15 +99,15 @@ class Plant(ABC):
 
         return self.OutputEquation(self.stateVariable_, tmpCurInput, self.plantParam_)
     
-    def GetSaturatedInput(self, curInput: np.array) -> np.array:
+    def GetSaturatedInput(self, curInput: np.ndarray) -> np.ndarray:
         """
         Get the saturated input
 
         Args:
-            u (np.array): input
+            u (np.ndarray): input
 
         Returns:
-            np.array: saturated input
+            np.ndarray: saturated input
         """
         input = curInput
         if not isinstance(curInput, np.ndarray):
@@ -115,16 +115,16 @@ class Plant(ABC):
 
         return self.GetSaturatedInputImpl(input, self.plantParam_)
     
-    def SetState(self, state: np.array) -> None:
+    def SetState(self, state: np.ndarray) -> None:
         """
         Set the state
 
         Args:
-            state (np.array): state
+            state (np.ndarray): state
         """
         self.stateVariable_ = state
 
-    def PushStateToLogger(self, curInput: np.array, logger: DataLogger) -> None:
+    def PushStateToLogger(self, curInput: np.ndarray, logger: DataLogger) -> None:
         """
         Push the state to the logger
 
@@ -135,49 +135,49 @@ class Plant(ABC):
 
     # private ------------------------------------------------------
     @abstractmethod
-    def StateEquation(self, curState: np.array, curInput: np.array, param: np.array) -> np.array:
+    def StateEquation(self, curState: np.ndarray, curInput: np.ndarray, param: np.ndarray) -> np.ndarray:
         """
         State equation of the plant.
         Please override this function in the derived class.
         
         Args:
-            curState (np.array): current state
-            curInput (np.array): current input
-            param (np.array): parameters
+            curState (np.ndarray): current state
+            curInput (np.ndarray): current input
+            param (np.ndarray): parameters
 
         Returns:
-            np.array: derivative of the state
+            np.ndarray: derivative of the state
         """
         pass
     
     @abstractmethod
-    def OutputEquation(self, curState: np.array, curInput: np.array, param: np.array) -> np.array:
+    def OutputEquation(self, curState: np.ndarray, curInput: np.ndarray, param: np.ndarray) -> np.ndarray:
         """
         Output equation of the plant.
         Please override this function in the derived class.
         
         Args:
-            curState (np.array): current state
-            curInput (np.array): current input
-            param (np.array): parameters
+            curState (np.ndarray): current state
+            curInput (np.ndarray): current input
+            param (np.ndarray): parameters
 
         Returns:
-            np.array: output
+            np.ndarray: output
         """
         pass
 
     @abstractmethod
-    def GetSaturatedInputImpl(self, u: np.array, param: np.array) -> np.array:
+    def GetSaturatedInputImpl(self, u: np.ndarray, param: np.ndarray) -> np.ndarray:
         """
         Get the saturated input.
         Please override this function in the derived class.
         
         Args:
-            u (np.array): input
-            param (np.array): parameters
+            u (np.ndarray): input
+            param (np.ndarray): parameters
 
         Returns:
-            np.array: saturated input
+            np.ndarray: saturated input
         """
         pass
 

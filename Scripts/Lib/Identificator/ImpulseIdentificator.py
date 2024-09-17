@@ -62,13 +62,13 @@ class ImpulseIdentificator(Identificator):
         self.modelState_ = np.zeros(param.systemOrder)
         self.model_ = StateSpace(self.modelStateEquation)
 
-    def IdentifySystemModelImpl(self, curInputs: np.array, curOutputs: np.array, dt: float) -> None:
+    def IdentifySystemModelImpl(self, curInputs: np.ndarray, curOutputs: np.ndarray, dt: float) -> None:
         """
         Identify the system
 
         Args:
-            curInputs (np.array): input signals in the current step
-            curOutputs (np.array): output signals in the current step
+            curInputs (np.ndarray): input signals in the current step
+            curOutputs (np.ndarray): output signals in the current step
             dt (float): time step
         """
         p = self.param_
@@ -120,12 +120,12 @@ class ImpulseIdentificator(Identificator):
 
         self.isIdentified_ = True
 
-    def UpdateEstimatedOutputImpl(self, curInputs: np.array, dt: float) -> None:
+    def UpdateEstimatedOutputImpl(self, curInputs: np.ndarray, dt: float) -> None:
         """
         Update the estimated output
 
         Args:
-            curInputs (np.array): input signals in the current step
+            curInputs (np.ndarray): input signals in the current step
             dt (float): time step
         """
         if not self.isIdentified_:
@@ -146,15 +146,15 @@ class ImpulseIdentificator(Identificator):
         """
         self.modelState_ = np.zeros(self.param_.systemOrder)
      
-    def modelStateEquation(self, curState: np.array, curInput: np.array, param: any) -> np.array:
+    def modelStateEquation(self, curState: np.ndarray, curInput: np.ndarray, param: any) -> np.ndarray:
         """
         Model state equation
 
         Args:
-            curInputs (np.array): input signals in the current step
+            curInputs (np.ndarray): input signals in the current step
 
         Returns:
-            np.array: estimated output
+            np.ndarray: estimated output
         """
         diffModelState = np.zeros(param.systemOrder)
         for i in range(param.systemOrder):

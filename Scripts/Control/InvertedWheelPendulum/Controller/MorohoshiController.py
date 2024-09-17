@@ -13,9 +13,9 @@ import numpy as np
 import json
 
 from Control.Abstract.Controller import Controller
-from Lib.Utils.PidServo import PidServo
+from Lib.Compensator.PidServo import PidServo
 from Lib.Utils.DataLogger import DataLogger
-from Lib.Utils.StateSpace import StateSpace
+from Lib.Compensator.StateSpace import StateSpace
 from Control.InvertedWheelPendulum.Plant.InvertedWheelPendulum import InvertedWheelPendulum
 from DebugDataLogger import DebugDataLogger
 
@@ -70,19 +70,19 @@ class MorohoshiController(Controller):
         self.theta_ = 0.0
         self.phi_ = 0.0
 
-    def ComputeControlInputImpl(self, refState: np.array, curState: np.array, prevSatInput: np.array, dt: float, param: Param) -> np.array:
+    def ComputeControlInputImpl(self, refState: np.ndarray, curState: np.ndarray, prevSatInput: np.ndarray, dt: float, param: Param) -> np.ndarray:
         """
         Compute control input
 
         Args:
-            refState (np.array): reference state
-            curState (np.array): current state
-            prevSatInput (np.array): previous saturated input
+            refState (np.ndarray): reference state
+            curState (np.ndarray): current state
+            prevSatInput (np.ndarray): previous saturated input
             dt (float): time step
             param (Param): controller parameters
 
         Returns:
-            np.array: control input
+            np.ndarray: control input
         """
         p = param
         pp = p.plantParam
@@ -128,7 +128,7 @@ class MorohoshiController(Controller):
 
         return np.array([controlInput])
 
-    def PushStateToLoggerImpl(self, refState: np.array, dataLogger: DataLogger) -> None:
+    def PushStateToLoggerImpl(self, refState: np.ndarray, curState: np.ndarray, dataLogger: DataLogger) -> None:
         dataLogger.PushData(refState[0], "refPhi")
 
     # private ------------------------------------------------------

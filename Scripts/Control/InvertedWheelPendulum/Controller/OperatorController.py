@@ -12,7 +12,7 @@ import numpy as np
 from numpy.core.multiarray import array as array
 from Control.Abstract.Controller import Controller
 from Control.InvertedWheelPendulum.Plant.InvertedWheelPendulum import InvertedWheelPendulum
-from Lib.Utils.StateSpace import StateSpace
+from Lib.Compensator.StateSpace import StateSpace
 from Lib.Utils.DataLogger import DataLogger
 
 class OperatorController(Controller):
@@ -279,11 +279,11 @@ class OperatorController(Controller):
 
         return self.controlInput_
     
-    def PushStateToLoggerImpl(self, refState: np.array, dataLogger: DataLogger) -> None:
+    def PushStateToLoggerImpl(self, refState: np.ndarray, curState: np.ndarray, dataLogger: DataLogger) -> None:
         dataLogger.PushData(refState[0], "refX")
     
     @staticmethod
-    def observerStateEquation(curState: np.ndarray, curInput: np.ndarray, param) -> np.ndarray:
+    def observerStateEquation(curState: np.ndarray, curInput: np.ndarray, param: Param) -> np.ndarray:
         """
         Compute forward and reverse operator
 

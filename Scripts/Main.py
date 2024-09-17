@@ -77,7 +77,7 @@ def main(program: str):
         # Store the state for plotting
         dataLogger.PushData(t[i], "time")
         plant.PushStateToLogger(inputs, dataLogger)
-        controller.PushStateToLogger(ref, dataLogger)
+        controller.PushStateToLogger(ref, sens, dataLogger)
 
         # Update the plant state
         plant.UpdateState(inputs, parameter.dt)

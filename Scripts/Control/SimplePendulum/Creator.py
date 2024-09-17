@@ -12,11 +12,11 @@ from Lib.SignalGenerator.SignalGenerator import SignalGenerator
 from Control.Abstract.Plant import Plant
 from Control.Abstract.Controller import Controller
 
-from Control.Pendulum.Parameter import Parameter, ControllerType, PlantType
-from Control.Pendulum.Plant.Pendulum import Pendulum
-from Control.Pendulum.Plant.EquivalentSaturateModel import EquivalentSaturateModel
-from Control.Pendulum.Controller.PidController import PidController
-from Control.Pendulum.Controller.OperatorController import OperatorController
+from Control.SimplePendulum.Parameter import Parameter, ControllerType, PlantType
+from Control.SimplePendulum.Plant.Pendulum import Pendulum
+from Control.SimplePendulum.Plant.EquivalentSaturateModel import EquivalentSaturateModel
+from Control.SimplePendulum.Controller.FrictionCompensation.PidController import PidController
+from Control.SimplePendulum.Controller.FrictionCompensation.OperatorController import OperatorController
 from Lib.SignalGenerator.ImpulseGenerator import ImpulseGenerator
 from Lib.SignalGenerator.MSequenceGenerator import MSequenceGenerator
 from Lib.SignalGenerator.StepGenerator import StepGenerator
@@ -41,7 +41,7 @@ def CreateController() -> Controller:
     if p.controllerType == ControllerType.PID:
         return PidController(p.pidControllerParam)
     elif p.controllerType == ControllerType.OPERATOR:
-        return OperatorController(p.operatorControllerParam)
+        return OperatorController(p.operatorControllerParam, p.operatorControllerQType)
     else:
         raise ValueError("Invalid controller type")
 

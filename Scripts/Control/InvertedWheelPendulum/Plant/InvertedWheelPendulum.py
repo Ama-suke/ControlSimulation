@@ -12,7 +12,7 @@
 import numpy as np
 
 from Control.Abstract.Plant import Plant
-from Lib.Utils.StateSpace import StateSpace
+from Lib.Compensator.StateSpace import StateSpace
 from Lib.Utils.DataLogger import DataLogger
 
 class InvertedWheelPendulum(Plant):
@@ -73,23 +73,23 @@ class InvertedWheelPendulum(Plant):
         Args:
             plantParam (Param): plant parameters
             solverType (StateSpace.SolverType, optional): solver type. Defaults to StateSpace.SolverType.RUNGE_KUTTA.
-            initialState (np.array, optional): initial state. Defaults to zero.
+            initialState (np.ndarray, optional): initial state. Defaults to zero.
         """
         stateOrder = 4
         super().__init__(stateOrder, plantParam, solverType, initialState)
 
     # private ------------------------------------------------------
-    def StateEquation(self, curState, curInput, param):
+    def StateEquation(self, curState: np.ndarray, curInput: np.ndarray, param: Param) -> np.ndarray:
         """
         State equation of inverted wheel pendulum
 
         Args:
-            curState (np.array): current state
-            curInput (np.array): current input
+            curState (np.ndarray): current state
+            curInput (np.ndarray): current input
             param (Param): parameters
 
         Returns:
-            np.array: derivative of the state
+            np.ndarray: derivative of the state
         """
         m_w = param.m_w
         J_w = param.J_w
@@ -122,17 +122,17 @@ class InvertedWheelPendulum(Plant):
 
         return np.array([dTheta, ddTheta, dPhi, ddPhi])
     
-    def OutputEquation(self, curState, curInput, param):
+    def OutputEquation(self, curState: np.ndarray, curInput: np.ndarray, param: Param) -> np.ndarray:
         """
         Output equation of inverted wheel pendulum
 
         Args:
-            curState (np.array): current state
-            curInput (np.array): current input
+            curState (np.ndarray): current state
+            curInput (np.ndarray): current input
             param (Param): parameters
 
         Returns:
-            np.array: output
+            np.ndarray: output
         """
         m_w = param.m_w
         J_w = param.J_w
@@ -152,23 +152,23 @@ class InvertedWheelPendulum(Plant):
 
         return np.array([theta, displacement])
     
-    def GetSaturatedInputImpl(self, u: np.array, param: np.array) -> np.array:
+    def GetSaturatedInputImpl(self, u: np.ndarray, param: Param) -> np.ndarray:
         """
         Get the saturated input.
         
         Args:
-            u (np.array): input
-            param (np.array): parameters
+            u (np.ndarray): input
+            param (np.ndarray): parameters
 
         Returns:
-            np.array: saturated input
+            np.ndarray: saturated input
         """
         tauMin = param.tauMin
         tauMax = param.tauMax
 
         return np.array([np.clip(u[0], tauMin, tauMax)])
     
-    def PushStateToLoggerImpl(self, curInput: np.array, logger: DataLogger) -> None:
+    def PushStateToLoggerImpl(self, curInput: np.ndarray, logger: DataLogger) -> None:
         """
         Push the state to the logger
 

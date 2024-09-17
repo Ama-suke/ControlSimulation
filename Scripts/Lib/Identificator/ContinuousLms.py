@@ -24,14 +24,14 @@ class ContinuousLms(Identificator):
     """
 
     class Param(Identificator.Param):
-        def __init__(self, systemOrder: int, sampleNum: int, initialP: np.array, isOnline: bool, filterLambda: float, dt: float) -> None:
+        def __init__(self, systemOrder: int, sampleNum: int, initialP: np.ndarray, isOnline: bool, filterLambda: float, dt: float) -> None:
             """
             constructor
 
             Args:
                 systemOrder (int): order of system
                 sampleNum (int): number of samples
-                initialP (np.array): initial P matrix
+                initialP (np.ndarray): initial P matrix
                 isOnline (bool): online or offline
                 filterLambda (float): filter parameter (filterLambda > 0)
                 dt (float): time step
@@ -66,7 +66,7 @@ class ContinuousLms(Identificator):
         self.ResetOutput()
 
     # private ---------------------------------------------------------------
-    def IdentifySystemModelImpl(self, curInputs: np.array, curOutputs: np.array, dt: float):
+    def IdentifySystemModelImpl(self, curInputs: np.ndarray, curOutputs: np.ndarray, dt: float):
         # coordinate variables
         output = curOutputs[0] # only supported 1st order
         self.inputFilterState_ = self.ComputeNextFilterState(self.inputFilterState_, curInputs, self.param_)
@@ -90,7 +90,7 @@ class ContinuousLms(Identificator):
         for i in range(len(theta)):
             DataLogger.PushData(theta[i], "theta" + str(i))
 
-    def UpdateEstimatedOutputImpl(self, curInputs: np.array, dt: float):
+    def UpdateEstimatedOutputImpl(self, curInputs: np.ndarray, dt: float):
         self.modelState_ = self.model_.ComputeNextState(self.modelState_, curInputs, dt, self.param_)
         self.estimatedOutput_[0] = np.dot(self.modelBeta_, self.modelState_)
 
@@ -100,7 +100,7 @@ class ContinuousLms(Identificator):
         self.modelState_ = np.zeros(self.param_.systemOrder)
 
     @staticmethod
-    def ComputeNextFilterState(curState: np.array, curInput: np.array, param: Param) -> np.array:
+    def ComputeNextFilterState(curState: np.ndarray, curInput: np.ndarray, param: Param) -> np.ndarray:
         p = param
 
         nextFilterState = np.zeros(p.systemOrder)
@@ -111,7 +111,7 @@ class ContinuousLms(Identificator):
         return nextFilterState
         
     @staticmethod
-    def ComputeCoordinatedState(curFilterState: np.array, curInput: np.array, param: Param) -> np.array:
+    def ComputeCoordinatedState(curFilterState: np.ndarray, curInput: np.ndarray, param: Param) -> np.ndarray:
         p = param
         n = p.systemOrder
 
@@ -136,7 +136,7 @@ class ContinuousLms(Identificator):
         return coordinatedState
                 
 
-    def modelStateEquation(self, curState: np.array, curInput: np.array, param: any) -> np.array:
+    def modelStateEquation(self, curState: np.ndarray, curInput: np.ndarray, param: any) -> np.ndarray:
         p = param
 
         diffState = np.zeros(p.systemOrder)

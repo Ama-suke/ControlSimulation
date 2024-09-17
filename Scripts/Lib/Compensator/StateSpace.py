@@ -48,13 +48,13 @@ class StateSpace():
         State update
 
         Args:
-            curState (np.array): current state
-            curInput (np.array): current input
+            curState (np.ndarray): current state
+            curInput (np.ndarray): current input
             dt (float): time step
-            param (np.array): parameters
+            param (np.ndarray): parameters
 
         Returns:
-            np.array: next state
+            np.ndarray: next state
         """
 
         nextState = self.fSolver_(curState, curInput, dt, self.fStateEquation_, param)

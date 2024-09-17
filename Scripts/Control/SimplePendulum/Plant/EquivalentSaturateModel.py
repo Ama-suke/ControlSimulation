@@ -12,8 +12,8 @@ import numpy as np
 import json
 
 from Control.Abstract.Plant import Plant
-from Control.Pendulum.Plant.Pendulum import Pendulum
-from Lib.Utils.StateSpace import StateSpace
+from Control.SimplePendulum.Plant.Pendulum import Pendulum
+from Lib.Compensator.StateSpace import StateSpace
 from Lib.Utils.DataLogger import DataLogger
 from Lib.Utils.Math import util_math
 
@@ -53,6 +53,11 @@ class EquivalentSaturateModel(Plant):
         def __str__(self) -> str:
             return json.dumps({
                 "EquivalentPendulum": {
+                    "base": json.loads(str(self.base)),
+                    "Kp": self.Kp,
+                    "Kd": self.Kd,
+                    "wMin": self.wMin,
+                    "wMax": self.wMax,
                     "deltaDDisabled": self.deltaDDisabled
                 }
             })
@@ -64,7 +69,7 @@ class EquivalentSaturateModel(Plant):
         Args:
             plantParam (Param): plant parameters
             solverType (StateSpace.SolverType, optional): solver type. Defaults to StateSpace.SolverType.RUNGE_KUTTA.
-            initialState (np.array, optional): initial state. Defaults to zero.
+            initialState (np.ndarray, optional): initial state. Defaults to zero.
         """
         stateOrder = 6
         initialStateArray = np.tile(initialState, int(stateOrder / 2))
@@ -78,16 +83,16 @@ class EquivalentSaturateModel(Plant):
         State equation of pendulum
 
         Args:
-            curState (np.array): current state
-            curInput (np.array): current input
+            curState (np.ndarray): current state
+            curInput (np.ndarray): current input
             param (Param): parameters
 
         Returns:
-            np.array: derivative of the state
+            np.ndarray: derivative of the state
         """
         m = param.base.m
         J = param.base.J
-        D = param.base.D
+        B = param.base.B
         l = param.base.l
         g = param.base.g
         Kp = param.Kp
@@ -113,7 +118,7 @@ class EquivalentSaturateModel(Plant):
         # D^-1
         w = thetaD + (tau + dist - deltaU + Kd * omegaD + m * g * l * np.sin(thetaD)) / Kp
         dThetaD = omegaD
-        dOmegaD = (-(D + Kd) * omegaD - Kp * (thetaD - w)) / J
+        dOmegaD = (-(B + Kd) * omegaD - Kp * (thetaD - w)) / J
 
         DebugDataLogger.PushData(w, "quasi-state")
         DebugDataLogger.PushData(thetaD, "thetaD")
@@ -124,7 +129,7 @@ class EquivalentSaturateModel(Plant):
 
         # N
         dThetaN = omegaN
-        dOmegaN = (-(D + Kd) * omegaN - Kp * (thetaN - wSat)) / J
+        dOmegaN = (-(B + Kd) * omegaN - Kp * (thetaN - wSat)) / J
 
         # store quasi-state
         self.w[0] = wSat
@@ -136,56 +141,56 @@ class EquivalentSaturateModel(Plant):
         Output equation of inverted wheel pendulum
 
         Args:
-            curState (np.array): current state
-            curInput (np.array): current input
+            curState (np.ndarray): current state
+            curInput (np.ndarray): current input
             param (Param): parameters
 
         Returns:
-            np.array: output
+            np.ndarray: output
         """
         return np.array([curState[0]])
     
-    def GetSaturatedInputImpl(self, u: np.array, param: Param) -> np.array:
+    def GetSaturatedInputImpl(self, u: np.ndarray, param: Param) -> np.ndarray:
         """
         Get the saturated input.
         
         Args:
-            u (np.array): input
-            param (np.array): parameters
+            u (np.ndarray): input
+            param (np.ndarray): parameters
 
         Returns:
-            np.array: saturated input
+            np.ndarray: saturated input
         """
         tauMin = param.base.tauMin
         tauMax = param.base.tauMax
 
         return np.array([np.clip(u[0], tauMin, tauMax)])
     
-    def PushStateToLoggerImpl(self, curInput: np.array, logger: DataLogger) -> None:
+    def PushStateToLoggerImpl(self, curInput: np.ndarray, logger: DataLogger) -> None:
         """
         Push the state to the logger
 
         Args:
-            curInput (np.array): current input
+            curInput (np.ndarray): current input
             logger (DataLogger): logger
         """
         logger.PushData(self.stateVariable_[0], "theta")
         logger.PushData(self.stateVariable_[1], "omega")
         logger.PushData(curInput[0], "tau")
 
-    def ComputeDeltaD(self, curState, curQuasiState, param: Param) -> np.array:
+    def ComputeDeltaD(self, curState, curQuasiState, param: Param) -> np.ndarray:
         """
         Compute the state equation of ΔD
         formula : ΔD = σ_u^-1 D σ_w - D
 
         return:
-            np.array: derivative of the state
+            np.ndarray: derivative of the state
             float: output of ΔD
         """
 
         m = param.base.m
         J = param.base.J
-        D = param.base.D
+        B = param.base.B
         l = param.base.l
         g = param.base.g
         Kp = param.Kp
@@ -205,7 +210,7 @@ class EquivalentSaturateModel(Plant):
         wSat = util_math.InvertibleSat(w, param.wMin, param.wMax, alpha)
         u2Sat = Kp * (thetaD2 - wSat) - Kd * omegaD2 - m * g * l * np.sin(thetaD2)
         dThetaD2 = omegaD2
-        dOmegaD2 = (-(D + Kd) * omegaD2 - Kp * (thetaD2 - wSat)) / J
+        dOmegaD2 = (-(B + Kd) * omegaD2 - Kp * (thetaD2 - wSat)) / J
         u2 = util_math.InvertibleSatInv(u1, param.base.tauMin, param.base.tauMax, alpha)
 
         DebugDataLogger.PushData(u2, "tau2DeltaD")

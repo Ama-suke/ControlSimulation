@@ -10,7 +10,7 @@
 
 import numpy as np
 from Control.Abstract.Plant import Plant
-from Lib.Utils.StateSpace import StateSpace
+from Lib.Compensator.StateSpace import StateSpace
 from Lib.Utils.DataLogger import DataLogger
 
 class DcMotor(Plant):
@@ -67,20 +67,20 @@ class DcMotor(Plant):
         Args:
             plantParam (Param): plant parameters
             solverType (StateSpace.SolverType, optional): solver type. Defaults to StateSpace.SolverType.RUNGE_KUTTA.
-            initialState (np.array, optional): initial state. Defaults to zero.
+            initialState (np.ndarray, optional): initial state. Defaults to zero.
         """
         super().__init__(2, plantParam, solverType, initialState)
 
-    def StateEquation(self, curState: np.array, curInput: np.array, param) -> np.array:
+    def StateEquation(self, curState: np.ndarray, curInput: np.ndarray, param) -> np.ndarray:
         """
         State equation of DC motor
         
         Args:
-            curState (np.array): current state
-            curInput (np.array): current input
+            curState (np.ndarray): current state
+            curInput (np.ndarray): current input
 
         Returns:
-            np.array: differential state
+            np.ndarray: differential state
         """
         J = param.J
         D = param.D
@@ -97,29 +97,29 @@ class DcMotor(Plant):
 
         return np.array([domega, di])
 
-    def OutputEquation(self, curState: np.array, curInput: np.array, param) -> np.array:
+    def OutputEquation(self, curState: np.ndarray, curInput: np.ndarray, param) -> np.ndarray:
         """
         Output equation of DC motor
 
         Args:
-            curState (np.array): current state
-            curInput (np.array): current input
+            curState (np.ndarray): current state
+            curInput (np.ndarray): current input
 
         Returns:
-            np.array: output
+            np.ndarray: output
         """
         noise = np.random.normal(np.zeros(2), param.vNoise)[0]
         return self.GetState() + noise
     
-    def GetSaturatedInputImpl(self, curInput: np.array) -> np.array:
+    def GetSaturatedInputImpl(self, curInput: np.ndarray) -> np.ndarray:
         """
         Get the saturated input
 
         Args:
-            curInput (np.array): current input
+            curInput (np.ndarray): current input
 
         Returns:
-            np.array: saturated input
+            np.ndarray: saturated input
         """
         u = curInput[0]
         if u > 1.0:
@@ -128,16 +128,16 @@ class DcMotor(Plant):
             u = -1.0
         return np.array([u])
     
-    def GetSaturatedInputImpl(self, u: np.array, param: np.array) -> np.array:
+    def GetSaturatedInputImpl(self, u: np.ndarray, param: np.ndarray) -> np.ndarray:
         """
         Get the saturated input
 
         Args:
-            u (np.array): input
-            param (np.array): parameters
+            u (np.ndarray): input
+            param (np.ndarray): parameters
 
         Returns:
-            np.array: saturated input
+            np.ndarray: saturated input
         """
         uMax = param.uMax
         uMin = param.uMin
