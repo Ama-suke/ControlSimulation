@@ -16,6 +16,13 @@ from Lib.SignalGenerator.SignalGenerator import SignalGenerator
 class SinGenerator(SignalGenerator):
     """
     Sine signal generator
+
+    Constructor:
+        SinGenerator(param)
+
+    Methods:
+        GenerateSignal: Generate a signal
+            GenerateSignal(k, dt)
     """
 
     class Param(SignalGenerator.Param):

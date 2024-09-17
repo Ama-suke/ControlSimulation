@@ -19,6 +19,7 @@ from Lib.SignalGenerator.ImpulseGenerator import ImpulseGenerator
 from Lib.SignalGenerator.MSequenceGenerator import MSequenceGenerator
 from Lib.SignalGenerator.StepGenerator import StepGenerator
 from Lib.SignalGenerator.SinGenerator import SinGenerator
+from Lib.SignalGenerator.SweepSinGenerator import SweepSinGenerator
 from Control.SimplePendulum.Controller.FrictionCompensation.PidController import PidController
 from Control.SimplePendulum.Controller.FrictionCompensation.OperatorController import OperatorController
 from Control.SimplePendulum.Plant.Pendulum import Pendulum
@@ -34,7 +35,7 @@ class PlantType(Enum):
 
 class Parameter:
     dt = 0.001           # time step
-    stopTime = 5       # simulation time
+    stopTime = 10       # simulation time
 
     solverType = StateSpace.SolverType.RUNGE_KUTTA  # solver type
     initialStates = [0, 0]    # initial states
@@ -97,10 +98,11 @@ class Parameter:
     operatorControllerQType = OperatorController.QOperator.PD  # type of Q operator
 
     referenceGeneratorParams = [
-        SinGenerator.Param(
-            amplitude=0.50,  # amplitude of the sine wave
-            frequency=0.5,    # frequency of the sine wave
-            phase=0         # phase of the sine wave
+        SweepSinGenerator.Param(
+            amplitude=0.1,  # amplitude of the signal
+            startFreq=0.1,  # start frequency
+            stopFreq=10,  # stop frequency
+            finishTime=stopTime  # finish time
         )
     ]
 

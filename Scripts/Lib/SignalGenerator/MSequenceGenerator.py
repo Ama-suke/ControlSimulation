@@ -21,7 +21,7 @@ class MSequenceGenerator(SignalGenerator):
 
     Methods:
         GenerateSignal: Generate M-sequence signal
-            GenerateSignal(i, dt)
+            GenerateSignal(k, dt)
     """
 
     class Param(SignalGenerator.Param):

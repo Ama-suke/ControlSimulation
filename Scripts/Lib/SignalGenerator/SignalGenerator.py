@@ -20,7 +20,7 @@ class SignalGenerator(ABC):
 
     Methods:
         GenerateSignal: Generate a signal
-            GenerateSignal(t, dt)
+            GenerateSignal(k, dt)
     """
 
     class Param:

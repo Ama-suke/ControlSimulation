@@ -24,6 +24,7 @@ from Lib.SignalGenerator.ImpulseGenerator import ImpulseGenerator
 from Lib.SignalGenerator.MSequenceGenerator import MSequenceGenerator
 from Lib.SignalGenerator.StepGenerator import StepGenerator
 from Lib.SignalGenerator.SinGenerator import SinGenerator
+from Lib.SignalGenerator.SweepSinGenerator import SweepSinGenerator
 
 defaultProgram = "InvertedWheelPendulum"
 
@@ -135,6 +136,8 @@ def CreateSignalGenerator(param: SignalGenerator.Param) -> SignalGenerator:
         return MSequenceGenerator(param)
     elif isinstance(param, SinGenerator.Param):
         return SinGenerator(param)
+    elif isinstance(param, SweepSinGenerator.Param):
+        return SweepSinGenerator(param)
     else:
         raise ValueError("Invalid reference generator type")
 
