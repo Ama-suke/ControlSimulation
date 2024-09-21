@@ -34,7 +34,7 @@ class PlantType(Enum):
     EQUIVALENT = 1
 
 class Parameter:
-    dt = 0.001           # time step
+    dt = 0.001          # time step
     stopTime = 10       # simulation time
 
     solverType = StateSpace.SolverType.RUNGE_KUTTA  # solver type
@@ -97,7 +97,7 @@ class Parameter:
     )
     operatorControllerQType = OperatorController.QOperator.PD  # type of Q operator
 
-    referenceGeneratorParams = [
+    referenceGenerators = [
         SweepSinGenerator.Param(
             amplitude=0.1,  # amplitude of the signal
             startFreq=0.1,  # start frequency
@@ -106,7 +106,7 @@ class Parameter:
         )
     ]
 
-    disturbanceGeneratorParams = [
+    disturbanceGenerators = [
         ImpulseGenerator.Param(
             amplitude=0.0,  # amplitude of the impulse
             startTimeStep=1  # time step of the impulse
@@ -134,8 +134,8 @@ class Parameter:
                 "pidControllerParam": json.loads(str(Parameter.pidControllerParam)),
                 "operatorControllerParam": json.loads(str(Parameter.operatorControllerParam)),
                 "operatorControllerQType": Parameter.operatorControllerQType.name,
-                "referenceGeneratorParams": [json.loads(str(p)) for p in Parameter.referenceGeneratorParams],
-                "disturbanceGeneratorParams": [json.loads(str(p)) for p in Parameter.disturbanceGeneratorParams]
+                "referenceGenerators": [json.loads(str(p)) for p in Parameter.referenceGenerators],
+                "disturbanceGenerators": [json.loads(str(p)) for p in Parameter.disturbanceGenerators]
             }
         }, indent=4)
 

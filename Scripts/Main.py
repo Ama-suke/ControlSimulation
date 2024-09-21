@@ -39,13 +39,13 @@ def main(program: str):
     controller: Controller = Creator.CreateController()
 
     # Create signal generators
-    refGenerators = []
-    ref = np.zeros(len(parameter.referenceGeneratorParams))
-    for refParam in parameter.referenceGeneratorParams:
+    refGenerators: list[SignalGenerator] = []
+    ref = np.zeros(len(parameter.referenceGenerators))
+    for refParam in parameter.referenceGenerators:
         refGenerators.append(CreateSignalGenerator(refParam))
-    distGenerators = []
-    dist = np.zeros(len(parameter.disturbanceGeneratorParams))
-    for distParam in parameter.disturbanceGeneratorParams:
+    distGenerators: list[SignalGenerator] = []
+    dist = np.zeros(len(parameter.disturbanceGenerators))
+    for distParam in parameter.disturbanceGenerators:
         distGenerators.append(CreateSignalGenerator(distParam))
 
     # Data logger for plot
@@ -85,29 +85,7 @@ def main(program: str):
     print("Done")
 
     # save the result to a file
-    print("Save the result...")
-    timeNow = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-    dataPath = f"../Data/{timeNow}"
-    if not os.path.exists(dataPath):
-        os.makedirs(dataPath)
-    dataLogger.SaveLoggedData(f"{dataPath}/result.csv")
-    DebugDataLogger.SaveLoggedData(f"{dataPath}/debug.csv")
-    parameter.SaveToFile(f"{dataPath}/parameter.json")
-
-    # Delete old data if there are more than 10 directories
-    dataDir = "../Data"
-    dirs = [os.path.join(dataDir, d) for d in os.listdir(dataDir) if os.path.isdir(os.path.join(dataDir, d))]
-    if len(dirs) > 10:
-        dirs.sort()
-        num_dirs_to_delete = len(dirs) - 10
-        for i in range(num_dirs_to_delete):
-            dirPath = dirs[i]
-            for root, subdirs, files in os.walk(dirPath, topdown=False):
-                for name in files:
-                    os.remove(os.path.join(root, name))
-                for name in subdirs:
-                    os.rmdir(os.path.join(root, name))
-            os.rmdir(dirPath)
+    SaveSimulationResult(dataLogger, parameter)
 
     print("Finish")
 
@@ -140,6 +118,31 @@ def CreateSignalGenerator(param: SignalGenerator.Param) -> SignalGenerator:
         return SweepSinGenerator(param)
     else:
         raise ValueError("Invalid reference generator type")
+
+def SaveSimulationResult(dataLogger: DataLogger, parameter):
+    print("Save the result...")
+    timeNow = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+    dataPath = f"../Data/{timeNow}"
+    if not os.path.exists(dataPath):
+        os.makedirs(dataPath)
+    dataLogger.SaveLoggedData(f"{dataPath}/result.csv")
+    DebugDataLogger.SaveLoggedData(f"{dataPath}/debug.csv")
+    parameter.SaveToFile(f"{dataPath}/parameter.json")
+
+    # Delete old data if there are more than 10 directories
+    dataDir = "../Data"
+    dirs = [os.path.join(dataDir, d) for d in os.listdir(dataDir) if os.path.isdir(os.path.join(dataDir, d))]
+    if len(dirs) > 10:
+        dirs.sort()
+        num_dirs_to_delete = len(dirs) - 10
+        for i in range(num_dirs_to_delete):
+            dirPath = dirs[i]
+            for root, subdirs, files in os.walk(dirPath, topdown=False):
+                for name in files:
+                    os.remove(os.path.join(root, name))
+                for name in subdirs:
+                    os.rmdir(os.path.join(root, name))
+            os.rmdir(dirPath)
 
 if __name__ == "__main__":
     program = defaultProgram

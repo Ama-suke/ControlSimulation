@@ -72,14 +72,14 @@ class Parameter():
         k3=1,     # gain for position
         lpfTau=0.01,   # time constant of low-pass filter
     )
-    referenceGeneratorParams = [
+    referenceGenerators = [
         StepGenerator.Param(
             stepValue = 0.0,      # step value
             initialValue = 0.0,   # initial value
             startTimeStep = stopTime / (2 * dt)   # step time
         )
     ]
-    disturbanceGeneratorParams = [
+    disturbanceGenerators = [
         ImpulseGenerator.Param(
             amplitude = 0.5,    # amplitude
             startTimeStep = stopTime / (dt) * 0   # start time step
