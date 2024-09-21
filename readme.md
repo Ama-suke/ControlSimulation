@@ -32,8 +32,8 @@ VSCodeで開発することを想定して様々な設定を行っています�
 
 | スニペット名           | 説明                                      |
 |-----------------------|-------------------------------------------|
-| controller            | コントローラ$\underset{r, y \mapsto u}{C}$ |
-| plant                 | 制御対象$\underset{d, u \mapsto y}{P}$（未実装）|
+| controller            | コントローラ $C: r, y \mapsto u$ |
+| plant                 | 制御対象 $P: d, u \mapsto y$（未実装）|
 | signalGenerator       | 信号生成器（目標値や外乱の生成に使う）       |
 
 ---
