@@ -10,14 +10,14 @@
 
 from Control.Abstract.Plant import Plant
 from Control.Abstract.Controller import Controller
-from Control.Seminar.Parameter import Parameter
+from Control.SeminarFirst.Parameter import Parameter
 
-from Control.Seminar.Plant.MassSpringDamper import MassSpringDamper
-from Control.Seminar.Plant.PolePlacementModel import PolePlacementModel
-from Control.Seminar.Plant.PoleZeroCancellationModel import PoleZeroCancellationModel
-from Control.Seminar.Controller.PidPositionController import PidPositionController
-from Control.Seminar.Controller.StraightFeedForward import StraightFeedForward
-from Control.Seminar.Parameter import Parameter
+from Control.SeminarFirst.Plant.MassSpringDamper import MassSpringDamper
+from Control.SeminarFirst.Plant.PolePlacementModel import PolePlacementModel
+from Control.SeminarFirst.Plant.PoleZeroCancellationModel import PoleZeroCancellationModel
+from Control.SeminarFirst.Controller.PidPositionController import PidPositionController
+from Control.SeminarFirst.Controller.StraightFeedForward import StraightFeedForward
+from Control.SeminarFirst.Parameter import Parameter
 
 def CreatePlant() -> Plant:
     """
