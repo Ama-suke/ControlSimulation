@@ -13,6 +13,7 @@ import os
 import sys
 import importlib.util
 import datetime
+import matplotlib.pyplot as plt
 
 from Lib.Utils.DataLogger import DataLogger
 from Lib.Utils.GraphPlotter import GraphPlotter
@@ -90,13 +91,12 @@ def main(program: str):
     print("Done")
 
     # save the result to a file
-    SaveSimulationResult(dataLogger, parameter)
-
-    # plot the result
-    graphPlotter.PlotGraphs()
-    graphPlotter.SaveGraphs("../Graphs/plot" + datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S") + ".pdf")
+    print("Save the result...")
+    graphPlotter.PlotGraphs(False)
+    SaveSimulationResult(dataLogger, graphPlotter, parameter)
 
     print("Finish")
+    plt.show()
 
 def ImportProgram(program: str):
     module_name = "Creator"
@@ -128,9 +128,10 @@ def CreateSignalGenerator(param: SignalGenerator.Param) -> SignalGenerator:
     else:
         raise ValueError("Invalid reference generator type")
 
-def SaveSimulationResult(dataLogger: DataLogger, parameter):
-    print("Save the result...")
+def SaveSimulationResult(dataLogger: DataLogger, graphPlotter: GraphPlotter, parameter):
     timeNow = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+
+    # Save the data
     dataPath = f"../Data/{timeNow}"
     if not os.path.exists(dataPath):
         os.makedirs(dataPath)
@@ -138,20 +139,32 @@ def SaveSimulationResult(dataLogger: DataLogger, parameter):
     DebugDataLogger.SaveLoggedData(f"{dataPath}/debug.csv")
     parameter.SaveToFile(f"{dataPath}/parameter.json")
 
+    # Save the plot
+    graphPath = f"../Graphs/{timeNow}"
+    if not os.path.exists(graphPath):
+        os.makedirs(graphPath)
+    graphPlotter.SaveGraphs(f"{dataPath}/plot.pdf")
+
     # Delete old data if there are more than 10 directories
-    dataDir = "../Data"
+    dataDirs = ["../Data", "../Graphs"]
+    for dataDir in dataDirs:
+        DeleteOldDirectories(dataDir)
+
+def DeleteOldDirectories(dataDir: str, numDirsToKeep: int = 10):
     dirs = [os.path.join(dataDir, d) for d in os.listdir(dataDir) if os.path.isdir(os.path.join(dataDir, d))]
-    if len(dirs) > 10:
-        dirs.sort()
-        num_dirs_to_delete = len(dirs) - 10
-        for i in range(num_dirs_to_delete):
-            dirPath = dirs[i]
-            for root, subdirs, files in os.walk(dirPath, topdown=False):
-                for name in files:
-                    os.remove(os.path.join(root, name))
-                for name in subdirs:
-                    os.rmdir(os.path.join(root, name))
-            os.rmdir(dirPath)
+    if len(dirs) <= numDirsToKeep:
+        return
+
+    dirs.sort()
+    num_dirs_to_delete = len(dirs) - numDirsToKeep
+    for i in range(num_dirs_to_delete):
+        dirPath = dirs[i]
+        for root, subdirs, files in os.walk(dirPath, topdown=False):
+            for name in files:
+                os.remove(os.path.join(root, name))
+            for name in subdirs:
+                os.rmdir(os.path.join(root, name))
+        os.rmdir(dirPath)
 
 if __name__ == "__main__":
     program = defaultProgram

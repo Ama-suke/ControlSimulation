@@ -149,14 +149,15 @@ class GraphPlotter:
         if self.plots_.get(title) is not None:
             self.plots_[title].yLabel = yLabel
 
-    def PlotGraphs(self):
+    def PlotGraphs(self, isShow: bool = False):
         """
         Plot the graphs
         """
         for key, plot in self.plots_.items():
             plot.PlotGraph()
 
-        plt.show()
+        if isShow:
+            plt.show()
 
     def SaveGraphs(self, fileName: str):
         """
