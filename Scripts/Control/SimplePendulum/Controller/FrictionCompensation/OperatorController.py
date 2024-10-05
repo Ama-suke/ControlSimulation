@@ -18,6 +18,7 @@ from Lib.Compensator.StateSpace import StateSpace
 from Lib.Utils.Math import util_math
 from Lib.Compensator.FunnelControl import FunnelControl
 from Lib.Utils.DataLogger import DataLogger
+from Lib.Utils.GraphPlotter import GraphPlotter
 from Lib.Compensator.PidServo import PidServo
 
 from DebugDataLogger import DebugDataLogger
@@ -160,6 +161,20 @@ class OperatorController(Controller):
         dataLogger.PushData(refState[0] - curState[0], "Error")
         dataLogger.PushData(self.bounds_[0], "UpperBounds")
         dataLogger.PushData(-self.bounds_[0], "LowerBounds")
+
+    def PushStateForPlotImpl(self, refState: np.ndarray, curState: np.ndarray, graphPlotter: GraphPlotter) -> None:
+        """
+        Push the data to the graph plotter
+
+        Args:
+            refState (np.ndarray): reference state
+            curState (np.ndarray): current state
+            graphPlotter (GraphPlotter): graph plotter
+        """
+        graphPlotter.PushPlotYData(refState[0], "Ref", "Position")
+        graphPlotter.PushPlotYData(refState[0] - curState[0], "Error", "Error")
+        graphPlotter.PushPlotYData(self.bounds_[0], "UpperBounds", "Error")
+        graphPlotter.PushPlotYData(-self.bounds_[0], "LowerBounds", "Error")
 
     def FirstOrderLpfStateEquation(self, curState, curInput, tau):
         """

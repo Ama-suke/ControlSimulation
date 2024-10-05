@@ -15,6 +15,7 @@ import importlib.util
 import datetime
 
 from Lib.Utils.DataLogger import DataLogger
+from Lib.Utils.GraphPlotter import GraphPlotter
 from DebugDataLogger import DebugDataLogger
 from Control.Abstract.Controller import Controller
 from Control.Abstract.Plant import Plant
@@ -50,6 +51,7 @@ def main(program: str):
 
     # Data logger for plot
     dataLogger = DataLogger()
+    graphPlotter = GraphPlotter()
 
     t = np.arange(0, parameter.stopTime, parameter.dt)
 
@@ -78,7 +80,10 @@ def main(program: str):
         # Store the state for plotting
         dataLogger.PushData(t[i], "time")
         plant.PushStateToLogger(inputs, dataLogger)
+        plant.PushStateForPlot(inputs, graphPlotter)
         controller.PushStateToLogger(ref, sens, dataLogger)
+        controller.PushStateForPlot(ref, sens, graphPlotter)
+        graphPlotter.PushPlotXData(t[i], "")
 
         # Update the plant state
         plant.UpdateState(inputs, parameter.dt)
@@ -86,6 +91,10 @@ def main(program: str):
 
     # save the result to a file
     SaveSimulationResult(dataLogger, parameter)
+
+    # plot the result
+    graphPlotter.PlotGraphs()
+    graphPlotter.SaveGraphs("../Graphs/plot" + datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S") + ".pdf")
 
     print("Finish")
 

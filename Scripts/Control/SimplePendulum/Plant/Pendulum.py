@@ -8,12 +8,14 @@
 # *
 # ----------------------------------------------------------------------------
 
+from Control.Abstract.Plant import Plant
+
 import numpy as np
 import json
 
-from Control.Abstract.Plant import Plant
 from Lib.Compensator.StateSpace import StateSpace
 from Lib.Utils.DataLogger import DataLogger
+from Lib.Utils.GraphPlotter import GraphPlotter
 
 class Pendulum(Plant):
     """
@@ -160,6 +162,18 @@ class Pendulum(Plant):
         logger.PushData(self.stateVariable_[0], "theta")
         logger.PushData(self.stateVariable_[1], "omega")
         logger.PushData(curInput[0], "tau")
+
+    def PushStateForPlotImpl(self, curInput: np.ndarray, graphPlotter: GraphPlotter) -> None:
+        """
+        Push the state to the logger for plot
+
+        Args:
+            curInput (np.ndarray): current input
+            graphPlotter (GraphPlotter): graph plotter
+        """
+        graphPlotter.PushPlotYData(self.stateVariable_[0], "theta", "theta")
+        graphPlotter.PushPlotYData(self.stateVariable_[1], "omega", "omega")
+        graphPlotter.PushPlotYData(curInput[0], "tau", "tau")
 
     def ComputeFrictionTorque(self, omega, tau, param: Param):
         """

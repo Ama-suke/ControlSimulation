@@ -26,7 +26,7 @@ class DataLogger:
         """
         constructor
         """
-        self.dataBuffer_ = {}
+        self.dataBuffer_: dict[str, list] = {}
     
     def PushData(self, data: float, key: str) -> None:
         """
@@ -66,8 +66,14 @@ class DataLogger:
                 f.write(dataStr + "\n")
         self.dataBuffer_.clear()
 
-    def GetData():
-        pass
+    def GetData(self) -> dict:
+        """
+        Get logged data
+
+        Returns:
+            dict: logged data
+        """
+        return self.dataBuffer_
 
 # ----------------------------------------------------------------------------
 # * @file DataLogger.py

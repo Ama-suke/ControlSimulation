@@ -12,6 +12,7 @@ import numpy as np
 from abc import ABC, abstractmethod
 
 from Lib.Utils.DataLogger import DataLogger
+from Lib.Utils.GraphPlotter import GraphPlotter
 
 class Controller(ABC):
     """
@@ -75,7 +76,8 @@ class Controller(ABC):
         Push the state to the data logger
 
         Args:
-            controlInput (np.ndarray): control input
+            refState (np.ndarray): reference state
+            curState (np.ndarray): current state
             dataLogger (DataLogger): data logger
         """
         tmpRefState = refState
@@ -85,6 +87,23 @@ class Controller(ABC):
         if not isinstance(curState, np.ndarray):
             tmpCurState = np.array([curState])
         self.PushStateToLoggerImpl(tmpRefState, tmpCurState, dataLogger)
+
+    def PushStateForPlot(self, refState: np.ndarray, curState: np.ndarray, graphPlotter: GraphPlotter) -> None:
+        """
+        Push the data to the graph plotter
+
+        Args:
+            refState (np.ndarray): reference state
+            curState (np.ndarray): current state
+            graphPlotter (GraphPlotter): graph plotter
+        """
+        tmpRefState = refState
+        if not isinstance(refState, np.ndarray):
+            tmpRefState = np.array([refState])
+        tmpCurState = curState
+        if not isinstance(curState, np.ndarray):
+            tmpCurState = np.array([curState])
+        self.PushStateForPlotImpl(tmpRefState, tmpCurState, graphPlotter)
 
     # private ------------------------------------------------------
     @abstractmethod
@@ -105,13 +124,26 @@ class Controller(ABC):
         pass
 
     @abstractmethod
-    def PushStateToLoggerImpl(self, refState: np.ndarray, dataLogger: DataLogger) -> None:
+    def PushStateToLoggerImpl(self, refState: np.ndarray, curState: np.ndarray, dataLogger: DataLogger) -> None:
         """
         Push the state to the data logger
 
         Args:
-            controlInput (np.ndarray): control input
+            refState (np.ndarray): reference state
+            curState (np.ndarray): current state
             dataLogger (DataLogger): data logger
+        """
+        pass
+
+    @abstractmethod
+    def PushStateForPlotImpl(self, refState: np.ndarray, curState: np.ndarray, graphPlotter: GraphPlotter) -> None:
+        """
+        Push the data to the graph plotter
+
+        Args:
+            refState (np.ndarray): reference state
+            curState (np.ndarray): current state
+            graphPlotter (GraphPlotter): graph plotter
         """
         pass
 

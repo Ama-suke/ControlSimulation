@@ -39,7 +39,7 @@ class PidServo:
                 Kp (float): proportional gain
                 Ki (float): integral gain
                 Kd (float): derivative gain
-                tua (float): time constant of the low-pass filter
+                tau (float): time constant of the low-pass filter. If 0, no filter is used.
             """
             self.Kp = Kp
             self.Ki = Ki
@@ -80,7 +80,7 @@ class PidServo:
         Returns:
             np.ndarray: control input
         """
-        lpfCoef = 1 / (dt / self.param_.tau + 1)
+        lpfCoef = self.param_.tau / (dt  + self.param_.tau)
 
         self.error = refState - curState
         self.intError_ += self.error * dt

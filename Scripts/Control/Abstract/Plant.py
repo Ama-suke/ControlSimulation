@@ -13,6 +13,7 @@ from Lib.Compensator.StateSpace import StateSpace
 from abc import ABC, abstractmethod
 
 from Lib.Utils.DataLogger import DataLogger
+from Lib.Utils.GraphPlotter import GraphPlotter
 
 class Plant(ABC):
     """
@@ -133,6 +134,16 @@ class Plant(ABC):
         """
         self.PushStateToLoggerImpl(curInput, logger)
 
+    def PushStateForPlot(self, curInput: np.ndarray, graphPlotter: GraphPlotter) -> None:
+        """
+        Push the state to the logger for plot
+
+        Args:
+            curInput (np.ndarray): current input
+            graphPlotter (GraphPlotter): graph plotter
+        """
+        self.PushStateForPlotImpl(curInput, graphPlotter)
+
     # private ------------------------------------------------------
     @abstractmethod
     def StateEquation(self, curState: np.ndarray, curInput: np.ndarray, param: np.ndarray) -> np.ndarray:
@@ -189,6 +200,18 @@ class Plant(ABC):
         
         Args:
             logger (DataLogger): logger
+        """
+        pass
+
+    @abstractmethod
+    def PushStateForPlotImpl(self, curInput: np.ndarray, graphPlotter: GraphPlotter) -> None:
+        """
+        Push the state to the logger for plot.
+        Please override this function in the derived class.
+
+        Args:
+            curInput (np.ndarray): current input
+            graphPlotter (GraphPlotter): graph plotter
         """
         pass
 

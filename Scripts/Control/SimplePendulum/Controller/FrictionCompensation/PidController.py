@@ -18,6 +18,7 @@ from Control.SimplePendulum.Plant.Pendulum import Pendulum
 from Lib.Utils.DataLogger import DataLogger
 
 from DebugDataLogger import DebugDataLogger
+from Lib.Utils.GraphPlotter import GraphPlotter
 
 class PidController(Controller):
     """
@@ -103,6 +104,20 @@ class PidController(Controller):
         """
         dataLogger.PushData(refState[0], "Ref")
         dataLogger.PushData(refState[1] - curState[0], "Error")
+
+    def PushStateForPlotImpl(self, refState: np.ndarray, curState: np.ndarray, graphPlotter: GraphPlotter) -> None:
+        """
+        Push the state to the graph plotter
+
+        Args:
+            refState (np.ndarray): reference state
+            curState (np.ndarray): current state
+            graphPlotter (GraphPlotter): graph plotter
+        """
+        graphPlotter.PlotData(refState[0], "Ref")
+        graphPlotter.PlotData(refState[1] - curState[0], "Error")
+
+        return
 
 # ----------------------------------------------------------------------------
 # * @file PidController.py
