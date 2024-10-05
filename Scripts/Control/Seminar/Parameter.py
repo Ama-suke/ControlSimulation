@@ -18,15 +18,24 @@ from Lib.SignalGenerator.SinGenerator import SinGenerator
 from Lib.SignalGenerator.SweepSinGenerator import SweepSinGenerator
 from Lib.SignalGenerator.MSequenceGenerator import MSequenceGenerator
 from Lib.Compensator.PidServo import PidServo
-from Control.Seminar.Plant.massSpringDamper import MassSpringDamper
+from Control.Seminar.Plant.MassSpringDamper import MassSpringDamper
+from Control.Seminar.Plant.PolePlacementModel import PolePlacementModel
+from Control.Seminar.Plant.PoleZeroCancellationModel import PoleZeroCancellationModel
 from Control.Seminar.Controller.PidPositionController import PidPositionController
 
 class Parameter:
+    class ModelType:
+        MASS_SPRING_DAMPER = 0
+        POLE_PLACEMENT = 1
+        POLE_ZERO_CANCELLATION = 2
+
     dt = 0.01
     stopTime = 10
 
     solverType = StateSpace.SolverType.RUNGE_KUTTA
     initialState = np.array([0.0, 0.0])
+
+    modelType = ModelType.MASS_SPRING_DAMPER
 
     plant = MassSpringDamper.Param(
         mass=1, 
@@ -34,11 +43,31 @@ class Parameter:
         springCoef=1
     )
 
+    polePlacement = PolePlacementModel.Param(
+        MassSpringDamperParam=plant,
+        poles=np.array([-5.0, -5.0, -5.0])
+    )
+
+    poleZeroCancellation = PoleZeroCancellationModel.Param(
+        omega=5
+    )
+
+    # designed pole placement
+    # controller = PidPositionController.Param(
+    #     pidParam=PidServo.Param(
+    #         Kp=-plant.springCoef + plant.mass * (polePlacement.poles[0] * polePlacement.poles[1] + polePlacement.poles[1] * polePlacement.poles[2] + polePlacement.poles[2] * polePlacement.poles[0]),
+    #         Ki=-plant.mass * polePlacement.poles[0] * polePlacement.poles[1] * polePlacement.poles[2],
+    #         Kd=-plant.viscousCoef - plant.mass * (polePlacement.poles[0] + polePlacement.poles[1] + polePlacement.poles[2]),
+    #         tau=0
+    #     )
+    # )
+
+    # designed pole zero cancellation
     controller = PidPositionController.Param(
         pidParam=PidServo.Param(
-            Kp=10,
-            Ki=2,
-            Kd=0,
+            Kp=plant.viscousCoef * poleZeroCancellation.omega,
+            Ki=plant.springCoef * poleZeroCancellation.omega,
+            Kd=plant.mass * poleZeroCancellation.omega,
             tau=0
         )
     )

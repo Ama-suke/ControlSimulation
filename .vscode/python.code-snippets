@@ -88,8 +88,8 @@
             "            curState (np.ndarray): current sensing state",
             "            graphPlotter (GraphPlotter): graph plotter",
             "        \"\"\"",
-            "        graphPlotter.PushData(refState[0], \"Ref\")",
-            "        graphPlotter.PushData(refState[0] - curState[0], \"Error\")",
+            "        graphPlotter.PushPlotYData(refState[0], \"Ref\", \"Ref\")",
+            "        graphPlotter.PushPlotYData(refState[0] - curState[0], \"Error\", \"Error\")",
             ""
         ],
         "description": "Controller Template"
@@ -211,8 +211,8 @@
             "            curInput (np.ndarray): current input",
             "            graphPlotter (GraphPlotter): graph plotter",
             "        \"\"\"",
-            "        graphPlotter.PushData(self.stateVariable_[0], \"State\")",
-            "        graphPlotter.PushData(curInput[0], \"Input\")",
+            "        graphPlotter.PushPlotYData(self.stateVariable_[0], \"State\", \"State\")",
+            "        graphPlotter.PushPlotYData(curInput[0], \"Input\", \"Input\")",
             ""
         ],
         "description": "Plant Template"

@@ -12,8 +12,11 @@ from Control.Abstract.Plant import Plant
 from Control.Abstract.Controller import Controller
 from Control.Seminar.Parameter import Parameter
 
-from Control.Seminar.Plant.massSpringDamper import MassSpringDamper
+from Control.Seminar.Plant.MassSpringDamper import MassSpringDamper
+from Control.Seminar.Plant.PolePlacementModel import PolePlacementModel
+from Control.Seminar.Plant.PoleZeroCancellationModel import PoleZeroCancellationModel
 from Control.Seminar.Controller.PidPositionController import PidPositionController
+from Control.Seminar.Controller.StraightFeedForward import StraightFeedForward
 from Control.Seminar.Parameter import Parameter
 
 def CreatePlant() -> Plant:
@@ -24,7 +27,14 @@ def CreatePlant() -> Plant:
         Plant: plant
     """
     p = Parameter()
-    return MassSpringDamper(p.plant, solverType = p.solverType, initialState = p.initialState)
+    if p.modelType == Parameter.ModelType.MASS_SPRING_DAMPER:
+        return MassSpringDamper(p.plant, solverType = p.solverType, initialState = p.initialState)
+    elif p.modelType == Parameter.ModelType.POLE_PLACEMENT:
+        return PolePlacementModel(p.polePlacement, solverType = p.solverType)
+    elif p.modelType == Parameter.ModelType.POLE_ZERO_CANCELLATION:
+        return PoleZeroCancellationModel(p.poleZeroCancellation, solverType = p.solverType)
+    else:
+        raise ValueError("Invalid model type")
 
 def CreateController() -> Controller:
     """
@@ -34,7 +44,14 @@ def CreateController() -> Controller:
         Controller: controller
     """
     p = Parameter()
-    return PidPositionController(p.controller)
+    if p.modelType == Parameter.ModelType.MASS_SPRING_DAMPER:
+        return PidPositionController(p.controller)
+    elif p.modelType == Parameter.ModelType.POLE_PLACEMENT:
+        return StraightFeedForward()
+    elif p.modelType == Parameter.ModelType.POLE_ZERO_CANCELLATION:
+        return StraightFeedForward()
+    else:
+        raise ValueError("Invalid model type")
 
 def GetParameter() -> Parameter:
     """

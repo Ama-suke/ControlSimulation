@@ -143,7 +143,7 @@ def SaveSimulationResult(dataLogger: DataLogger, graphPlotter: GraphPlotter, par
     graphPath = f"../Graphs/{timeNow}"
     if not os.path.exists(graphPath):
         os.makedirs(graphPath)
-    graphPlotter.SaveGraphs(f"{dataPath}/plot.pdf")
+    graphPlotter.SaveGraphs(f"{graphPath}/plot.pdf")
 
     # Delete old data if there are more than 10 directories
     dataDirs = ["../Data", "../Graphs"]

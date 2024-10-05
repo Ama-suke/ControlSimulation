@@ -1,9 +1,9 @@
 #!/usr/bin/env python
 # ----------------------------------------------------------------------------
-# * @file MassSpringDamper.py
-# * @brief ばね-質点-ダンパ系の数学モデル
+# * @file polePlacementModel.py
+# * @brief Reference model of PID pole placement method
 # * @author hoshina
-# * @date 2024/10/05
+# * @date 2024/10/06
 # * @details 
 # *
 # ----------------------------------------------------------------------------
@@ -17,22 +17,22 @@ from Lib.Compensator.StateSpace import StateSpace
 from Lib.Utils.DataLogger import DataLogger
 from Lib.Utils.GraphPlotter import GraphPlotter
 from DebugDataLogger import DebugDataLogger
+from Control.Seminar.Plant.MassSpringDamper import MassSpringDamper
 
-class MassSpringDamper(Plant):
+class PolePlacementModel(Plant):
     """
     Plant class
 
     Formula:
-        d^2y/dt^2 = -D/M dy/dt - K/M y + u
+        d^3x/dt^3 = (p0 + p1 + p2) dx^2/dt^2 + (p0*p1 + p1*p2 + p2*p0) dx/dt + p0*p1*p2 x + u
+        y = (Kd/m) d^2x/dt^2 + (Kp/m) dx/dt + (Ki/m) x
 
-        K = spring coef
-        D = viscous coef
-        M = mass
-        y = system position
-        u = input force
+        kp = -k + m (p0*p1 + p1*p2 + p2*p0)
+        ki = -m p0*p1*p2
+        kd = -c - m (p0 + p1 + p2)
 
     Constructor:
-        MassSpringDamper(plantParam, solverType = StateSpace, initialState)
+        PolePlacementModel(plantParam, solverType, initialState)
 
     Methods:
         See Plant class
@@ -42,25 +42,24 @@ class MassSpringDamper(Plant):
         """
         Parameters of plant
         """
-        def __init__(self, mass, springCoef, viscousCoef) -> None:
+        def __init__(self, MassSpringDamperParam: MassSpringDamper.Param, 
+                     poles: np.ndarray) -> None:
             """
             constructor
 
             Args:
-                mass (float): mass
-                springCoef (float): spring coefficient
-                viscousCoef (float): viscous coefficient
+                MassSpringDamperParam (MassSpringDamper.Param): mass spring damper model parameters
+                poles (np.ndarray): poles of the system
+
             """
-            self.mass = mass
-            self.springCoef = springCoef
-            self.viscousCoef = viscousCoef
+            self.MassSpringDamperParam = MassSpringDamperParam
+            self.poles = poles
 
         def __str__(self) -> str:
             return json.dumps({
-                "MassSpringDamper": {
-                    "mass": self.mass,
-                    "springCoef": self.springCoef,
-                    "viscousCoef": self.viscousCoef
+                "PolePlacementModel": {
+                    "MassSpringDamperModel": str(self.MassSpringDamperParam),
+                    "Poles": self.poles.tolist()
                 }})
 
     def __init__(self, plantParam: Param, solverType = StateSpace.SolverType.RUNGE_KUTTA, initialState = None) -> None:
@@ -72,7 +71,7 @@ class MassSpringDamper(Plant):
             solverType (StateSpace.SolverType, optional): ODE solver type
             initialState (np.ndarray, optional): initial state
         """
-        stateOrder = 2
+        stateOrder = 3
         super().__init__(stateOrder, plantParam, solverType, initialState)
 
     # private ------------------------------------------------------
@@ -88,10 +87,15 @@ class MassSpringDamper(Plant):
         Returns:
             np.ndarray: derivative of the state
         """
-        diffState = np.zeros_like(curState)
+        p = param.poles
 
+        diffState = np.zeros_like(curState)
         diffState[0] = curState[1]
-        diffState[1] = (curInput[0] - param.springCoef * curState[0] - param.viscousCoef * curState[1]) / param.mass
+        diffState[1] = curState[2]
+        diffState[2] = p[0] * p[1] * p[2] * curState[0]\
+                       - (p[0] * p[1] + p[1] * p[2] + p[2] * p[0]) * curState[1]\
+                       + (p[0] + p[1] + p[2]) * curState[2]\
+                       + curInput[0]
 
         return diffState
 
@@ -107,11 +111,28 @@ class MassSpringDamper(Plant):
         Returns:
             np.ndarray: output of the plant
         """
-        output = curState[0]
+        pp = param.MassSpringDamperParam
+        p = param.poles
+        kp = -pp.springCoef + pp.mass * (p[0] * p[1] + p[1] * p[2] + p[2] * p[0])
+        ki = -pp.mass * p[0] * p[1] * p[2]
+        kd = -pp.viscousCoef - pp.mass * (p[0] + p[1] + p[2])
+
+        output = kd / pp.mass * curState[2] + kp / pp.mass * curState[1] + ki / pp.mass * curState[0]
+
         return np.array([output])
-    
-    def GetSaturatedInputImpl(self, u: np.ndarray, param: np.ndarray) -> np.ndarray:
-        return u
+
+    def GetSaturatedInputImpl(self, controlInput: np.ndarray, param: Param) -> np.ndarray:
+        """
+        Get saturated control input
+
+        Args:
+            controlInput (np.ndarray): control input
+            param (Param): plant parameters
+
+        Returns:
+            np.ndarray: saturated input
+        """
+        return controlInput
 
     def PushStateToLoggerImpl(self, curInput: np.ndarray, dataLogger: DataLogger) -> None:
         """
@@ -121,24 +142,21 @@ class MassSpringDamper(Plant):
             curInput (np.ndarray): current input
             dataLogger (DataLogger): data logger
         """
-        dataLogger.PushData(self.stateVariable_[0], "Position")
-        dataLogger.PushData(self.stateVariable_[1], "Velocity")
         dataLogger.PushData(curInput[0], "InputForce")
 
     def PushStateForPlotImpl(self, curInput: np.ndarray, graphPlotter: GraphPlotter) -> None:
         """
-        Push the data to the graph plotter
+        Push the state to the plotter
 
         Args:
             curInput (np.ndarray): current input
             graphPlotter (GraphPlotter): graph plotter
         """
-        graphPlotter.PushPlotYData(self.stateVariable_[0], "Position", "Position")
-        graphPlotter.PushPlotYData(self.stateVariable_[1], "Velocity", "Velocity")
-        graphPlotter.PushPlotYData(curInput[0], "InputForce", "Force")
+        graphPlotter.PushPlotYData(curInput[0], "Input", "Force")
+
 
 # ----------------------------------------------------------------------------
-# * @file MassSpringDamper.py
+# * @file polePlacementModel.py
 # * History
 # * -------
-# * - 2024/10/05 New created.(By hoshina)
+# * - 2024/10/06 New created.(By hoshina)

@@ -1,9 +1,9 @@
 #!/usr/bin/env python
 # ----------------------------------------------------------------------------
-# * @file MassSpringDamper.py
-# * @brief ばね-質点-ダンパ系の数学モデル
+# * @file PoleZeroCancellationModel.py
+# * @brief Pole-zero cancellation model
 # * @author hoshina
-# * @date 2024/10/05
+# * @date 2024/10/06
 # * @details 
 # *
 # ----------------------------------------------------------------------------
@@ -18,21 +18,15 @@ from Lib.Utils.DataLogger import DataLogger
 from Lib.Utils.GraphPlotter import GraphPlotter
 from DebugDataLogger import DebugDataLogger
 
-class MassSpringDamper(Plant):
+class PoleZeroCancellationModel(Plant):
     """
     Plant class
 
     Formula:
-        d^2y/dt^2 = -D/M dy/dt - K/M y + u
-
-        K = spring coef
-        D = viscous coef
-        M = mass
-        y = system position
-        u = input force
+        dy/dt = omega (-y + u)
 
     Constructor:
-        MassSpringDamper(plantParam, solverType = StateSpace, initialState)
+        PoleZeroCancellationModel(plantParam, solverType, initialState)
 
     Methods:
         See Plant class
@@ -42,25 +36,19 @@ class MassSpringDamper(Plant):
         """
         Parameters of plant
         """
-        def __init__(self, mass, springCoef, viscousCoef) -> None:
+        def __init__(self, omega) -> None:
             """
             constructor
 
             Args:
-                mass (float): mass
-                springCoef (float): spring coefficient
-                viscousCoef (float): viscous coefficient
+                omega (float): natural frequency
             """
-            self.mass = mass
-            self.springCoef = springCoef
-            self.viscousCoef = viscousCoef
+            self.omega = omega
 
         def __str__(self) -> str:
             return json.dumps({
-                "MassSpringDamper": {
-                    "mass": self.mass,
-                    "springCoef": self.springCoef,
-                    "viscousCoef": self.viscousCoef
+                "PoleZeroCancellationModel": {
+                    "omega": self.omega
                 }})
 
     def __init__(self, plantParam: Param, solverType = StateSpace.SolverType.RUNGE_KUTTA, initialState = None) -> None:
@@ -72,7 +60,7 @@ class MassSpringDamper(Plant):
             solverType (StateSpace.SolverType, optional): ODE solver type
             initialState (np.ndarray, optional): initial state
         """
-        stateOrder = 2
+        stateOrder = 1
         super().__init__(stateOrder, plantParam, solverType, initialState)
 
     # private ------------------------------------------------------
@@ -89,9 +77,7 @@ class MassSpringDamper(Plant):
             np.ndarray: derivative of the state
         """
         diffState = np.zeros_like(curState)
-
-        diffState[0] = curState[1]
-        diffState[1] = (curInput[0] - param.springCoef * curState[0] - param.viscousCoef * curState[1]) / param.mass
+        diffState[0] = param.omega * (-curState[0] + curInput[0])
 
         return diffState
 
@@ -109,9 +95,19 @@ class MassSpringDamper(Plant):
         """
         output = curState[0]
         return np.array([output])
-    
-    def GetSaturatedInputImpl(self, u: np.ndarray, param: np.ndarray) -> np.ndarray:
-        return u
+
+    def GetSaturatedInputImpl(self, controlInput: np.ndarray, param: Param) -> np.ndarray:
+        """
+        Get saturated control input
+
+        Args:
+            controlInput (np.ndarray): control input
+            param (Param): plant parameters
+
+        Returns:
+            np.ndarray: saturated input
+        """
+        return controlInput
 
     def PushStateToLoggerImpl(self, curInput: np.ndarray, dataLogger: DataLogger) -> None:
         """
@@ -121,24 +117,21 @@ class MassSpringDamper(Plant):
             curInput (np.ndarray): current input
             dataLogger (DataLogger): data logger
         """
-        dataLogger.PushData(self.stateVariable_[0], "Position")
-        dataLogger.PushData(self.stateVariable_[1], "Velocity")
         dataLogger.PushData(curInput[0], "InputForce")
 
     def PushStateForPlotImpl(self, curInput: np.ndarray, graphPlotter: GraphPlotter) -> None:
         """
-        Push the data to the graph plotter
+        Push the state to the plotter
 
         Args:
             curInput (np.ndarray): current input
             graphPlotter (GraphPlotter): graph plotter
         """
-        graphPlotter.PushPlotYData(self.stateVariable_[0], "Position", "Position")
-        graphPlotter.PushPlotYData(self.stateVariable_[1], "Velocity", "Velocity")
         graphPlotter.PushPlotYData(curInput[0], "InputForce", "Force")
 
+
 # ----------------------------------------------------------------------------
-# * @file MassSpringDamper.py
+# * @file PoleZeroCancellationModel.py
 # * History
 # * -------
-# * - 2024/10/05 New created.(By hoshina)
+# * - 2024/10/06 New created.(By hoshina)
