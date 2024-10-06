@@ -10,6 +10,7 @@
 
 import numpy as np
 import json
+from enum import Enum
 
 from Lib.Compensator.StateSpace import StateSpace
 from Lib.SignalGenerator.ImpulseGenerator import ImpulseGenerator
@@ -24,10 +25,10 @@ from Control.SeminarFirst.Plant.PoleZeroCancellationModel import PoleZeroCancell
 from Control.SeminarFirst.Controller.PidPositionController import PidPositionController
 
 class Parameter:
-    class ModelType:
-        MASS_SPRING_DAMPER = 0
-        POLE_PLACEMENT = 1
-        POLE_ZERO_CANCELLATION = 2
+    class ModelType(Enum):
+        MASS_SPRING_DAMPER = 0      # Mass spring damper system
+        POLE_PLACEMENT = 1          # Pole placement reference model
+        POLE_ZERO_CANCELLATION = 2  # Pole zero cancellation reference model
 
     dt = 0.01
     stopTime = 10
@@ -102,6 +103,7 @@ class Parameter:
                 "stopTime": Parameter.stopTime,
                 "solverType": Parameter.solverType.name,
                 "initialState": Parameter.initialState.tolist(),
+                "modelType": Parameter.modelType.name,
                 "plant": json.loads(str(Parameter.plant)),
                 "controller": json.loads(str(Parameter.controller)),
                 "referenceGenerators": [json.loads(str(p)) for p in Parameter.referenceGenerators],
