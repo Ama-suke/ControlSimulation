@@ -95,6 +95,9 @@ def main(program: str):
     graphPlotter.PlotGraphs(False)
     SaveSimulationResult(dataLogger, graphPlotter, parameter)
 
+    # delete pycache
+    DeletePyCache()
+
     print("Finish")
     plt.show()
 
@@ -165,6 +168,19 @@ def DeleteOldDirectories(dataDir: str, numDirsToKeep: int = 10):
             for name in subdirs:
                 os.rmdir(os.path.join(root, name))
         os.rmdir(dirPath)
+
+def DeletePyCache():
+    for root, dirs, files in os.walk(os.getcwd()):
+        for dir in dirs:
+            if dir != "__pycache__":
+                continue
+
+            pycache_path = os.path.join(root, dir)
+            for file in os.listdir(pycache_path):
+                file_path = os.path.join(pycache_path, file)
+                if os.path.isfile(file_path):
+                    os.unlink(file_path)
+            os.rmdir(pycache_path)
 
 if __name__ == "__main__":
     program = defaultProgram
