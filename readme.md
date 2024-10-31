@@ -14,6 +14,10 @@ Python Scripts/Main.py <program>
 - Fig : ドキュメントに使用する図を保存するフォルダ。
 - Scripts : プログラム本体が格納されているフォルダ。
     - Control : 制御対象のプログラムが格納されているフォルダ。
+        - Controller : 制御器のプログラム
+        - Plant : 制御対象のプログラム
+        - Creator.py : 制御対象の生成プログラム
+        - Parameter.py : パラメータを格納するファイル
     - Lib : ライブラリが格納されているフォルダ。全体的に利用可能なスクリプトを格納。
     - Main.py : メインプログラム。
 

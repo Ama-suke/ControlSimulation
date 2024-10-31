@@ -116,7 +116,7 @@ def ImportProgram(program: str):
 
 def CreateSignalGenerator(param: SignalGenerator.Param) -> SignalGenerator:
     """
-    Create reference signal generator
+    Create signal generator
     """
     if isinstance(param, StepGenerator.Param):
         return StepGenerator(param)
@@ -147,6 +147,7 @@ def SaveSimulationResult(dataLogger: DataLogger, graphPlotter: GraphPlotter, par
     if not os.path.exists(graphPath):
         os.makedirs(graphPath)
     graphPlotter.SaveGraphs(f"{graphPath}/plot.pdf")
+    graphPlotter.SaveGraphs(f"{graphPath}/plot.png")
 
     # Delete old data if there are more than 10 directories
     dataDirs = ["../Data", "../Graphs"]

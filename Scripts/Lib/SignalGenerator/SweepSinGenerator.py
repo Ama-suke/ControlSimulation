@@ -35,8 +35,8 @@ class SweepSinGenerator(SignalGenerator):
 
             Args:
                 amplitude (float): amplitude
-                startFreq (float): start frequency
-                stopFreq (float): stop frequency
+                startFreq (float): start frequency[Hz]
+                stopFreq (float): stop frequency[Hz]
                 finishTime (float): finish time
 
             """
@@ -80,7 +80,7 @@ class SweepSinGenerator(SignalGenerator):
             np.ndarray: signal
         """
         signal = param.amplitude * np.sin(self.phase_)
-        self.phase_ += self.freq_ * dt
+        self.phase_ += 2 * np.pi * self.freq_ * dt
         self.freq_ += param.freqStep * dt
         return signal
 

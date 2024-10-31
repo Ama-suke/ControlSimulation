@@ -17,7 +17,7 @@
             "id": "input1",
             "type": "promptString",
             "description": "Select program directory in \"Scripts/Control/\"",
-            "default": "SeminarFirst"
+            "default": "SeminarFourth"
         }
     ]
 }

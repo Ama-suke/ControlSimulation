@@ -27,12 +27,13 @@ class StateSpace():
         EULER = 0           # Euler method. 1st order
         RUNGE_KUTTA = 1     # Runge-Kutta method. 4th order
 
-    def __init__(self, fStateEquation, solverType: SolverType = SolverType.RUNGE_KUTTA) -> None:
+    def __init__(self, fStateEquation, fOutputEquation = None, solverType: SolverType = SolverType.RUNGE_KUTTA) -> None:
         """
         constructor
 
         Args:
             fStateEquation (function): state equation
+            fOutputEquation (function, optional): output equation. Defaults to None.
             solverType (SolverType, optional): solver type. Defaults to SolverType.RUNGE_KUTTA.
         """
 
@@ -42,6 +43,7 @@ class StateSpace():
             self.fSolver_ = self.SolveRungeKutta
 
         self.fStateEquation_ = fStateEquation
+        self.fOutputEquation_ = fOutputEquation
 
     def ComputeNextState(self, curState, curInput, dt, param):
         """
@@ -59,6 +61,26 @@ class StateSpace():
 
         nextState = self.fSolver_(curState, curInput, dt, self.fStateEquation_, param)
         return nextState
+    
+    def ComputeOutput(self, curState, curInput, param):
+        """
+        Output equation
+
+        Args:
+            curState (np.ndarray): current state
+            curInput (np.ndarray): current input
+            param (np.ndarray): parameters
+
+        Returns:
+            np.ndarray: output
+        """
+
+        if self.fOutputEquation_ is not None:
+            output = self.fOutputEquation_(curState, curInput, param)
+        else:
+            print("\033[93m" + "warning: output equation is not defined." + "\033[0m")
+            output = 0
+        return output
 
     # private ------------------------------------------------------
     @staticmethod
@@ -80,3 +102,4 @@ class StateSpace():
 # * History
 # * -------
 # * - 2024/07/02 New created.(By hoshina)
+# * - 2024/10/31 Add output equation.(By hoshina)
